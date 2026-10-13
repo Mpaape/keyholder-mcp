@@ -1,0 +1,21 @@
+# Segredos: nunca versionar
+.env
+.env.*
+*.pem
+*.key
+*.kdbx
+unseal-keys*.json
+*init*.json
+config/seal.hcl
+**/openbao-data/
+**/*.snap
+**/*.snapshot
+
+# Ambiente e artefatos
+node_modules/
+__pycache__/
+*.pyc
+.venv/
+dist/
+build/
+.DS_Store
