@@ -1,4 +1,4 @@
-# Keyholder
+# Keyholder MCP
 
 Cofre local de credenciais para agentes de IA. O agente descobre **nomes** de credenciais e as usa na execução, mas o **valor nunca entra no chat**. O acesso é temporário: expira sozinho.
 

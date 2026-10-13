@@ -1,4 +1,4 @@
-# Keyholder: especificação do cofre de credenciais via MCP para agentes de IA
+# Keyholder MCP: especificação do cofre de credenciais via MCP para agentes de IA
 
 Versão 0.1, 2026-10-13. Combina a arquitetura sobre o OpenBao com o modelo de produto: referências, sessões e adaptadores. Itens não verificados estão marcados **[a verificar]**.
 
