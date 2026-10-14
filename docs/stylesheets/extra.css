@@ -1,0 +1,3 @@
+/* Small tweaks over Material. */
+.md-typeset h2 { margin-top: 1.6em; }
+.md-typeset .grid.cards > ul > li { border-radius: 0.4rem; }

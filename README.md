@@ -1,117 +1,75 @@
 # Keyholder MCP
 
-Cofre local de credenciais para agentes de IA. O agente descobre **nomes** de credenciais e as usa na execução, mas o **valor nunca entra no chat**. O acesso é temporário: expira sozinho.
+[![CI](https://github.com/Mpaape/keyholder-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/Mpaape/keyholder-mcp/actions/workflows/ci.yml)
+[![Docs](https://github.com/Mpaape/keyholder-mcp/actions/workflows/docs.yml/badge.svg)](https://mpaape.github.io/keyholder-mcp/)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-> Status: prova de conceito. Servidor MCP em Go sobre o [OpenBao](https://openbao.org), testado de ponta a ponta contra `bao server -dev` 2.7.1. Spec completo em [`docs/SPEC.md`](docs/SPEC.md).
+**Let AI agents use your credentials without ever seeing them.**
 
-## Como funciona
+[Português](README.pt-BR.md) · [Documentation](https://mpaape.github.io/keyholder-mcp/) · [Tutorials](https://mpaape.github.io/keyholder-mcp/tutorials/)
 
-1. Os segredos ficam no KV v2 do OpenBao, um caminho por projeto (`secret/meu-projeto/dev`).
-2. Você emite fora do chat um token **embrulhado** (uso único) com prazo e política mínima.
-3. O `keyholder-mcp` desembrulha esse token ao iniciar e o guarda só em memória.
-4. O agente lista as referências (`vault://meu-projeto/dev/API_TOKEN`) e pede execuções com placeholders:
-   `curl -H "Authorization: Bearer {{vault://meu-projeto/dev/API_TOKEN}}" https://api.example.com/health`
-5. O runner troca o placeholder pelo valor só na hora de executar, sem shell, e devolve a saída com o valor mascarado.
-6. Quando o token expira, as tools falham com uma mensagem clara e você renova fora do chat.
+Keyholder MCP is an [MCP](https://modelcontextprotocol.io) server over [OpenBao](https://openbao.org). The agent sees credential **names** and asks to run commands with them; the value is filled in only when the command runs (late binding), and the output comes back with the value masked. Access is temporary: a wrapped, single-use token with a TTL.
 
-## Tools MCP
+```text
+agent asks:   curl -H "Authorization: Bearer {{vault://my-project/dev/API_TOKEN}}" https://api.example.com/health
+agent reads:  api says: hello, caller with header Authorization: Bearer [hidden:vault://my-project/dev/API_TOKEN]
+```
 
-| Tool | O que faz | Devolve |
+> Status: proof of concept. Tested end to end against OpenBao 2.7.1; every tutorial is a real, re-checked run.
+
+## Tools
+
+| Tool | Does | Returns |
 | --- | --- | --- |
-| `keyholder_status` | Estado do cofre e da sessão | Selado ou não, TTL restante, políticas; nunca o token |
-| `keyholder_listar` | Referências do escopo do projeto | Só nomes `vault://...` |
-| `keyholder_executar` | Roda um comando permitido com `{{vault://...}}` em `args` ou `env` | Código de saída, stdout e stderr mascarados, referências usadas |
+| `keyholder_status` | Vault and session status | Sealed or not, remaining TTL, policies; never the token |
+| `keyholder_list` | References in the project scope | `vault://` names only |
+| `keyholder_run` | Runs an allowed command with `{{vault://...}}` in `args` or `env` | Exit code, masked stdout and stderr, references used |
 
-## Compilar
+## Quick start
 
-Requer Go 1.25 ou superior.
+Requires Go 1.25+ and [OpenBao](https://openbao.org/docs/install/).
 
-```sh
-go mod tidy        # gera o go.sum, verificado pelo checksum database do Go
-go test ./...
-go build -o keyholder-mcp ./cmd/keyholder-mcp     # no Windows: -o keyholder-mcp.exe
-```
+```bash
+go mod tidy && go build -o keyholder-mcp ./cmd/keyholder-mcp
 
-## Prova de conceito (OpenBao dev, dados em memória)
+bao server -dev -dev-root-token-id=root-dev        # in-memory, never with real secrets
 
-Num terminal (WSL ou Linux):
-
-```sh
-bao server -dev -dev-root-token-id=root-dev        # NUNCA use o modo dev com segredos reais
-```
-
-Em outro:
-
-```sh
 export BAO_ADDR=http://127.0.0.1:8200 BAO_TOKEN=root-dev
-bao kv put secret/meu-projeto/dev API_TOKEN=valor-de-teste
-bao policy write meu-projeto-leitura deploy/policy-projeto-leitura.hcl
-
-# Token de 1 hora, embrulhado: o valor impresso só funciona uma vez, por 5 minutos.
-bao token create -policy=meu-projeto-leitura -ttl=1h -explicit-max-ttl=1h -wrap-ttl=5m -field=wrapping_token
+bao kv put -mount=secret my-project/dev API_TOKEN=your-api-token
+bao policy write my-project-read deploy/policy-project-read.hcl
+bao token create -policy=my-project-read -ttl=8h -explicit-max-ttl=8h -wrap-ttl=5m -field=wrapping_token
 ```
 
-## Configuração do cliente MCP
+Then add `keyholder-mcp` to your MCP client with `BAO_ADDR`, `BAO_WRAPPING_TOKEN`, `KEYHOLDER_SCOPE=my-project` and `KEYHOLDER_ALLOW=curl`. Full walkthrough: [Getting started](https://mpaape.github.io/keyholder-mcp/getting-started/). Client setup for Claude Code, Cursor and Codex: [MCP clients](https://mpaape.github.io/keyholder-mcp/clients/).
 
-O formato abaixo é o `mcpServers` usado por vários clientes; confira a documentação do seu.
+## Guarantees and limits
 
-```json
-{
-  "mcpServers": {
-    "keyholder": {
-      "command": "/caminho/para/keyholder-mcp",
-      "env": {
-        "BAO_ADDR": "http://127.0.0.1:8200",
-        "BAO_WRAPPING_TOKEN": "<valor impresso pelo comando acima>",
-        "KEYHOLDER_SCOPE": "meu-projeto",
-        "KEYHOLDER_ALLOW": "curl,aws,gcloud"
-      }
-    }
-  }
-}
-```
+- Values never pass through MCP messages; the executed command does receive them, as any real use of a credential does.
+- Commands run without a shell, only if named in `KEYHOLDER_ALLOW`, and only with references inside `KEYHOLDER_SCOPE`.
+- `BAO_*`, `VAULT_*` and `KEYHOLDER_*` never reach the child process.
+- Masking matches the exact value only. Never allow shells or interpreters (`sh`, `bash`, `python`, `env`).
+- It does not protect against a hostile agent running as your own OS user.
 
-O token embrulhado fica no arquivo de configuração, mas deixa de valer assim que o servidor o desembrulha. Cada reinício do servidor precisa de um token embrulhado novo, que é a renovação fora do chat.
+Details: [Security model](https://mpaape.github.io/keyholder-mcp/security/).
 
-| Variável | Padrão | Uso |
-| --- | --- | --- |
-| `BAO_ADDR` | do cliente OpenBao | Endereço do cofre |
-| `BAO_WRAPPING_TOKEN` | | Token embrulhado, de uso único (preferido) |
-| `BAO_TOKEN` | | Token comum; aceito só para testes |
-| `KEYHOLDER_KV_MOUNT` | `secret` | Mount do KV v2 |
-| `KEYHOLDER_SCOPE` | vazio (tudo) | Prefixo do projeto; referências fora dele são recusadas |
-| `KEYHOLDER_ALLOW` | vazio (nada) | Comandos permitidos, separados por vírgula |
-| `KEYHOLDER_TIMEOUT` | `5m` | Tempo máximo por execução |
+## Documentation
 
-## Garantias e limites
-
-- O valor não passa pelas mensagens MCP, mas o processo executado o recebe, como em qualquer uso real de credencial.
-- O mascaramento casa só o valor exato. Um comando que codifique o segredo (base64, por exemplo) o expõe. Por isso a lista de comandos permitidos importa: não libere `sh`, `bash`, `python` ou `env`.
-- `BAO_*`, `VAULT_*` e `KEYHOLDER_*` são removidas do ambiente do processo filho, então o token do cofre não chega ao comando.
-- Não protege contra um agente hostil que roda com o seu usuário do sistema.
-
-## Documentação
-
-| Documento | Conteúdo |
+| Page | Content |
 | --- | --- |
-| [docs/SPEC.md](docs/SPEC.md) | Especificação: requisitos, arquitetura, fluxo de acesso, modelo de ameaças, decisões |
-| [docs/DESENVOLVIMENTO.md](docs/DESENVOLVIMENTO.md) | Compilar, testar, estrutura dos pacotes, teste com OpenBao dev, fluxo de contribuição |
-| [docs/REVISAO.md](docs/REVISAO.md) | Revisão com AurumCode: workflow, secrets, gate, todas as regras, exceções |
-| [SECURITY.md](SECURITY.md) | Como reportar uma vulnerabilidade |
-| [CHANGELOG.md](CHANGELOG.md) | Mudanças por versão |
+| [Getting started](https://mpaape.github.io/keyholder-mcp/getting-started/) | From zero to an agent using a credential |
+| [Tutorials](https://mpaape.github.io/keyholder-mcp/tutorials/) | Quickstart, temporary access, guardrails, masking; real outputs |
+| [Configuration](https://mpaape.github.io/keyholder-mcp/configuration/) | Every variable, tool and field |
+| [Security model](https://mpaape.github.io/keyholder-mcp/security/) | What is protected and what is not |
+| [Architecture](https://mpaape.github.io/keyholder-mcp/architecture/) | Components, access flow, packages |
+| [Specification](https://mpaape.github.io/keyholder-mcp/spec/) | Requirements, decisions, acceptance criteria, roadmap |
+| [Code review](https://mpaape.github.io/keyholder-mcp/review/) | AurumCode rules for security, review and SOLID |
 
-## Revisão de código
+The site sources are in [`docs/`](docs/) (English) and [`docs/pt-BR/`](docs/pt-BR/) (Portuguese).
 
-Cada pull request é revisado pelo [AurumCode](https://github.com/Mpaape/AurumCode) (`.github/workflows/aurumcode.yml`), com as regras em `.aurumcode/skills/`:
+## Contributing
 
-| Skill | Cobre |
-| --- | --- |
-| `seguranca` | Segredo nunca volta ao agente nem vai para log, execução sem shell, lista de comandos, escopo, token só em memória |
-| `review` | Erros, testes, contexto, stdout reservado ao MCP, portabilidade |
-| `solid` | SOLID aplicado aos pacotes Go do projeto |
+See [CONTRIBUTING.md](CONTRIBUTING.md). Every pull request is reviewed by [AurumCode](https://github.com/Mpaape/AurumCode) with the rules in [`.aurumcode/skills/`](.aurumcode/skills/). Security issues: [SECURITY.md](SECURITY.md).
 
-O check reprova com achado de severidade `error`. Também rodam Semgrep (SAST) e gitleaks (segredos no histórico da PR). Secrets, variáveis e a lista completa de regras: [docs/REVISAO.md](docs/REVISAO.md).
-
-## Licença
+## License
 
 [MIT](LICENSE).

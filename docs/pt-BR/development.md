@@ -1,0 +1,80 @@
+# Desenvolvimento
+
+## Requisitos
+
+| Ferramenta | Versão | Uso |
+| --- | --- | --- |
+| Go | 1.25 ou superior | Compilar e testar |
+| OpenBao (`bao`) | 2.7.x testado | Tutoriais e testes manuais |
+| `curl`, `python3` | qualquer | Tutoriais |
+| Docker | qualquer | Gerar o site de documentação |
+
+## Primeira compilação
+
+O repositório ainda não traz `go.sum`. Crie-o na primeira vez; o Go confere cada módulo no banco de checksums:
+
+```bash
+go mod tidy
+go test ./...
+go vet ./...
+gofmt -l .
+```
+
+## Estrutura
+
+| Caminho | O quê |
+| --- | --- |
+| `cmd/keyholder-mcp` | O servidor MCP |
+| `cmd/khcall` | O cliente MCP de depuração |
+| `internal/` | `runner`, `bao`, `ref`, `mask` ([Arquitetura](architecture.md#pacotes)) |
+| `deploy/` | Política de exemplo do OpenBao |
+| `demo/tutorials/` | Tutoriais executáveis: `run.sh`, `out/`, `expected/` |
+| `docs/` | Este site (inglês), `docs/pt-BR/` (português) |
+| `.aurumcode/` | Regras de revisão de código ([Revisão de código](review.md)) |
+| `.github/workflows/` | CI, revisão de código, site de documentação |
+
+## Testes
+
+```bash
+go test ./...
+```
+
+Os testes do runner usam uma cópia do próprio binário de teste como processo filho (`TestMain` com `KH_TEST_HELPER`), então rodam igual no Windows, Linux e macOS, sem shell.
+
+## Tutoriais
+
+```bash
+for t in quickstart access guardrails masking; do
+  bash demo/tutorials/$t/run.sh all && bash demo/tutorials/$t/run.sh --check
+done
+```
+
+Quando uma mudança altera uma saída de propósito, rode o tutorial, revise `out/`, copie para `expected/` e faça commit dos dois. O CI falha quando `out/` e `expected/` divergem.
+
+## Site de documentação
+
+O site é [MkDocs Material](https://squidfunk.github.io/mkdocs-material/) num contêiner fixado por digest (`scripts/docs/image.lock`):
+
+```bash
+scripts/docs/build.sh     # gera ./site com --strict
+scripts/docs/serve.sh     # http://127.0.0.1:8000 com recarga automática
+```
+
+As páginas de tutorial incluem os arquivos de `demo/tutorials/*/expected/` na geração, então as saídas no site são sempre as conferidas. Cada página em inglês tem uma equivalente em `docs/pt-BR/`; altere as duas no mesmo pull request.
+
+## CI
+
+| Workflow | Roda |
+| --- | --- |
+| `ci.yml` | `gofmt`, `go vet`, `go test`, `go build` em Linux, Windows e macOS; cada tutorial e seu `--check` no Linux |
+| `aurumcode.yml` | Revisão de código por IA com as regras do projeto, gitleaks e Semgrep |
+| `docs.yml` | Gera o site com `--strict` em todo PR; publica no GitHub Pages a partir do `main` |
+
+## Contribuir
+
+1. Crie um branch a partir do `main`.
+2. Abra um pull request. O AurumCode o revisa; o check `aurumcode/policy-gate` precisa passar.
+3. Uma mudança numa tool, numa variável ou no fluxo de acesso atualiza o `README.md`, a documentação e as versões em português no mesmo PR.
+4. Acrescente uma linha ao `CHANGELOG.md` em `## Unreleased`.
+
+O inglês é a língua principal do repositório: código, comentários, mensagens e commits. O português é a segunda língua da documentação.

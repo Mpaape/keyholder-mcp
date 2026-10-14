@@ -1,0 +1,111 @@
+site_name: Keyholder MCP
+site_url: https://mpaape.github.io/keyholder-mcp/
+site_description: Let AI agents use your credentials without ever seeing them. An MCP server over OpenBao.
+repo_url: https://github.com/Mpaape/keyholder-mcp
+edit_uri: edit/main/docs/
+docs_dir: docs
+site_dir: site
+strict: true
+theme:
+  name: material
+  language: en
+  font: false
+  features:
+    - navigation.tabs
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: deep purple
+      accent: amber
+      toggle: {icon: material/brightness-7, name: Dark mode}
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: deep purple
+      accent: amber
+      toggle: {icon: material/brightness-4, name: Light mode}
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Mpaape/keyholder-mcp
+      name: Keyholder MCP on GitHub
+extra_css:
+  - stylesheets/extra.css
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  # Tutorial outputs are included from demo/tutorials/*/expected/, the files
+  # that run.sh --check compares against a real run. check_paths fails the
+  # build when an included file is missing.
+  - pymdownx.snippets:
+      base_path: ["."]
+      check_paths: true
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+plugins:
+  - search:
+      lang: [en, pt]
+validation:
+  nav:
+    omitted_files: warn
+    not_found: warn
+    absolute_links: warn
+  links:
+    not_found: warn
+    anchors: warn
+    absolute_links: warn
+    unrecognized_links: warn
+nav:
+  - Home:
+    - index.md
+    - Getting started: getting-started.md
+    - MCP clients: clients.md
+  - Tutorials:
+    - tutorials/index.md
+    - Quickstart: tutorials/quickstart.md
+    - Temporary access: tutorials/access.md
+    - Guardrails: tutorials/guardrails.md
+    - Masking and its limit: tutorials/masking.md
+  - Reference:
+    - Configuration: configuration.md
+    - Windows and WSL: windows-wsl.md
+  - How it works:
+    - Architecture: architecture.md
+    - Security model: security.md
+    - Specification: spec.md
+  - Contributing:
+    - Development: development.md
+    - Code review: review.md
+  - Português:
+    - pt-BR/index.md
+    - Começando: pt-BR/getting-started.md
+    - Clientes MCP: pt-BR/clients.md
+    - Tutoriais:
+      - pt-BR/tutorials/index.md
+      - Início rápido: pt-BR/tutorials/quickstart.md
+      - Acesso temporário: pt-BR/tutorials/access.md
+      - Proteções: pt-BR/tutorials/guardrails.md
+      - Mascaramento e seu limite: pt-BR/tutorials/masking.md
+    - Configuração: pt-BR/configuration.md
+    - Windows e WSL: pt-BR/windows-wsl.md
+    - Arquitetura: pt-BR/architecture.md
+    - Modelo de segurança: pt-BR/security.md
+    - Especificação: pt-BR/spec.md
+    - Desenvolvimento: pt-BR/development.md
+    - Revisão de código: pt-BR/review.md
+  - GitHub: https://github.com/Mpaape/keyholder-mcp

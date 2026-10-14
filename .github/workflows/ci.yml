@@ -21,8 +21,8 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
-      # O go.sum ainda não está no repositório: o tidy o gera aqui, verificado
-      # pelo checksum database do Go. Remover este passo quando ele for commitado.
+      # go.sum is not in the repository yet: tidy creates it here, checked
+      # against the Go checksum database. Drop this step once it is committed.
       - name: go mod tidy
         run: go mod tidy
       - name: gofmt
@@ -30,7 +30,7 @@ jobs:
         run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
       - name: go vet
         run: go vet ./...
-      # Falhas viram anotações do job, visíveis no PR sem abrir o log.
+      # Failures become job annotations, visible on the PR without the log.
       - name: go test
         shell: bash
         run: |
@@ -40,3 +40,42 @@ jobs:
           exit 1
       - name: go build
         run: go build -o keyholder-mcp-bin ./cmd/keyholder-mcp
+
+  # Runs every executable tutorial against a real OpenBao dev server and
+  # fails when an output drifts from the recorded expected/ files.
+  tutorials:
+    name: tutorials
+    runs-on: ubuntu-latest
+    env:
+      BAO_VERSION: 2.7.1
+      BAO_SHA256: 0e2f1ce10d124e03112b50dd2fbec6b78003783253bc3a91587938f39d1e2243
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+      - name: go mod tidy
+        run: go mod tidy
+      - name: Install OpenBao (checksum verified)
+        run: |
+          f="openbao_${BAO_VERSION}_linux_amd64.tar.gz"
+          curl -fsSLo "$RUNNER_TEMP/$f" "https://github.com/openbao/openbao/releases/download/v${BAO_VERSION}/$f"
+          echo "${BAO_SHA256}  $RUNNER_TEMP/$f" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/bao"
+          tar -xzf "$RUNNER_TEMP/$f" -C "$RUNNER_TEMP/bao" bao
+          echo "$RUNNER_TEMP/bao" >> "$GITHUB_PATH"
+      - name: Build binaries
+        run: |
+          mkdir -p "$RUNNER_TEMP/bin"
+          go build -o "$RUNNER_TEMP/bin/keyholder-mcp" ./cmd/keyholder-mcp
+          go build -o "$RUNNER_TEMP/bin/khcall" ./cmd/khcall
+          echo "KH_BIN_DIR=$RUNNER_TEMP/bin" >> "$GITHUB_ENV"
+      - name: Run tutorials and compare with expected/
+        run: |
+          bao version
+          for t in quickstart access guardrails masking; do
+            echo "::group::$t"
+            bash "demo/tutorials/$t/run.sh" all
+            bash "demo/tutorials/$t/run.sh" --check
+            echo "::endgroup::"
+          done

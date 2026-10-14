@@ -1,13 +1,25 @@
-# Segurança
+# Security policy
 
-O Keyholder MCP lida com credenciais. Se você encontrou uma falha que permite a um agente ver um valor de segredo, o token do cofre ou o token embrulhado, ou executar algo fora da lista de comandos permitidos, **não abra uma issue pública**.
+Keyholder MCP handles credentials. If you found a way for an agent to see a secret value, the vault token or the wrapped token, or to run something outside the command allow list or the project scope, **do not open a public issue**.
 
-Reporte pelo [aviso privado de vulnerabilidade do GitHub](https://github.com/Mpaape/keyholder-mcp/security/advisories/new), com os passos para reproduzir.
+Report it through [GitHub private vulnerability reporting](https://github.com/Mpaape/keyholder-mcp/security/advisories/new), with steps to reproduce. Use fake secrets in the report.
 
-## Limites conhecidos (não são vulnerabilidades)
+## Supported versions
 
-- O processo executado recebe o valor do segredo, como em qualquer uso real de credencial.
-- O mascaramento só casa o valor exato; um comando que codifique o segredo o expõe. Por isso não se libera `sh`, `bash`, `python` ou `env` em `KEYHOLDER_ALLOW`.
-- Não há proteção contra um agente hostil que roda com o mesmo usuário do sistema.
+The project is a proof of concept. Fixes go to `main`; there are no maintained release branches yet.
 
-Detalhes no [modelo de ameaças](docs/SPEC.md#10-modelo-de-ameaças).
+## Known limits (not vulnerabilities)
+
+- The executed command receives the secret value, as any real use of a credential does.
+- Masking only matches the exact value; a command that encodes the secret exposes it. That is why shells and interpreters (`sh`, `bash`, `python`, `env`) must never be in `KEYHOLDER_ALLOW`.
+- There is no protection against a hostile agent running as the same OS user.
+
+Details: [Security model](https://mpaape.github.io/keyholder-mcp/security/).
+
+---
+
+## Português
+
+Se você encontrou uma forma de um agente ver um valor de segredo, o token do cofre ou o token embrulhado, ou rodar algo fora da lista de comandos ou do escopo do projeto, **não abra uma issue pública**. Reporte pelo [aviso privado de vulnerabilidade do GitHub](https://github.com/Mpaape/keyholder-mcp/security/advisories/new), com os passos para reproduzir e segredos falsos.
+
+Limites conhecidos, que não são vulnerabilidades: o comando executado recebe o valor; o mascaramento só casa o valor exato; não há proteção contra um agente hostil com o mesmo usuário do sistema. Detalhes no [Modelo de segurança](https://mpaape.github.io/keyholder-mcp/pt-BR/security/).
