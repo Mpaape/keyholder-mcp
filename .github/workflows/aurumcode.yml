@@ -37,7 +37,7 @@ jobs:
   # SARIF to the Security tab (code scanning). Fork PRs do not get the
   # permission: the if skips this and the SARIF stays an artifact.
   upload-sarif:
-    name: SARIF na aba Security
+    name: SARIF to the Security tab
     needs: review
     if: ${{ !cancelled() && github.event.pull_request.head.repo.full_name == github.repository }}
     runs-on: ubuntu-latest
