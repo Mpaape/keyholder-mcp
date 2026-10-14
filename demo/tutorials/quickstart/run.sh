@@ -12,7 +12,7 @@ setup() { echo_server; }
 
 case_01-store() {
   step 01-store "The human stores a secret and a read policy (outside the chat)"
-  show admin kv put -mount=secret my-project/dev API_TOKEN=tok-fake-0123456789 API_URL=http://127.0.0.1:18080/health
+  show admin kv put -mount=secret my-project/dev API_TOKEN=tok-fake-not-a-real-secret API_URL=http://127.0.0.1:18080/health
   show admin policy write my-project-read deploy/policy-project-read.hcl
 }
 
@@ -26,7 +26,7 @@ case_03-run() {
   step 03-run "The agent calls an API with the token; the value is masked"
   session my-project-read 1h keyholder_run \
     '{"command":"curl","args":["-sS","-H","Authorization: Bearer {{vault://my-project/dev/API_TOKEN}}","{{vault://my-project/dev/API_URL}}"]}'
-  note "Did the API receive the stored token? $(server_saw 'Bearer tok-fake-0123456789')"
+  note "Did the API receive the stored token? $(server_saw 'Bearer tok-fake-not-a-real-secret')"
 }
 
 main "$@"

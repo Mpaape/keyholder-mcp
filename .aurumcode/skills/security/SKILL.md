@@ -57,4 +57,4 @@ The repository is public. An added line does not name a company, an internal dom
 
 ## SEC-014 Examples and tests use fake values only
 severity: error
-Documentation, example policies, tutorials and tests use obviously fake values (`tok-fake-0123456789`, `root-dev`). Never a real token, key or credential URL, not even a fragment.
+Documentation, example policies, tutorials and tests use obviously fake values (`tok-fake-not-a-real-secret`, `root-dev`). Never a real token, key or credential URL, not even a fragment.

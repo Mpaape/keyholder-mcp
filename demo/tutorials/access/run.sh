@@ -9,7 +9,7 @@ CASES=(01-single-use 02-expiry 03-no-token)
 
 setup() {
   echo_server
-  admin kv put -mount=secret my-project/dev API_TOKEN=tok-fake-0123456789 >/dev/null
+  admin kv put -mount=secret my-project/dev API_TOKEN=tok-fake-not-a-real-secret >/dev/null
   admin policy write my-project-read deploy/policy-project-read.hcl >/dev/null
 }
 

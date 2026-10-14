@@ -10,7 +10,7 @@ export KEYHOLDER_SCOPE=my-project KEYHOLDER_ALLOW=curl,printenv
 CASES=(01-scope 02-allow-list 03-reserved-env 04-child-env)
 
 setup() {
-  admin kv put -mount=secret my-project/dev API_TOKEN=tok-fake-0123456789 >/dev/null
+  admin kv put -mount=secret my-project/dev API_TOKEN=tok-fake-not-a-real-secret >/dev/null
   admin kv put -mount=secret other-project/prod DB_PASSWORD=pw-fake-other >/dev/null
   # A broad policy on purpose: the scope check must hold even when the
   # vault would allow the read.

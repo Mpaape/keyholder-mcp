@@ -1,6 +1,6 @@
 # The human stores a secret and a read policy (outside the chat)
 
-$ bao kv put -mount=secret my-project/dev API_TOKEN=tok-fake-0123456789 API_URL=http://127.0.0.1:18080/health
+$ bao kv put -mount=secret my-project/dev API_TOKEN=tok-fake-not-a-real-secret API_URL=http://127.0.0.1:18080/health
 ======= Secret Path =======
 secret/data/my-project/dev
 

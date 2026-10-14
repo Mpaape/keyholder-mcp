@@ -7,10 +7,10 @@ $ BAO_WRAPPING_TOKEN=<wrapped token> khcall keyholder_run '{"command":"python3",
     "vault://my-project/dev/API_TOKEN"
   ],
   "stderr": "",
-  "stdout": "dG9rLWZha2UtMDEyMzQ1Njc4OQ==\n"
+  "stdout": "dG9rLWZha2Utbm90LWEtcmVhbC1zZWNyZXQ=\n"
 }
 --- stderr
 <timestamp> audit cmd="python3" refs=[vault://my-project/dev/API_TOKEN] exit=0 dur=<duration> status=ok
 exit_code=0
 
-Decoded: tok-fake-0123456789 (the fake token, unmasked)
+Decoded: tok-fake-not-a-real-secret (the fake token, unmasked)
