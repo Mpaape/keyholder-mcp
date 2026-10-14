@@ -14,7 +14,9 @@ permissions:
   checks: read
 
 concurrency:
-  group: aurumcode-review-${{ github.event.pull_request.number }}
+  # Must differ from the group the reusable review job uses
+  # (aurumcode-review-<pr>), or GitHub cancels both as a deadlock.
+  group: keyholder-review-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
@@ -72,7 +74,7 @@ jobs:
         run: |
           set -euo pipefail
           if [ -n "${LLM_API_KEY:-}" ] && [ -n "${LLM_BASE_URL:-}" ]; then
-            echo "Provedor configurado; o job review publica aurumcode/policy-gate"
+            echo "Provider configured; the review job posts aurumcode/policy-gate"
             exit 0
           fi
           reason="review not run: secrets LLM_API_KEY and LLM_BASE_URL are missing"
