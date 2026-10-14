@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -15,6 +16,11 @@ import (
 // O próprio binário de teste faz o papel do comando executado, o que funciona
 // igual em Linux, macOS e Windows. Ver TestMain.
 const helperEnv = "KH_TEST_HELPER"
+
+// helperDir guarda uma CÓPIA do binário de teste com o nome kh-helper. Não é um
+// hard link: no Windows um executável em uso não pode ser apagado, e o link
+// aponta para o binário que está rodando, então a limpeza do diretório falharia.
+var helperDir string
 
 func TestMain(m *testing.M) {
 	if mode := os.Getenv(helperEnv); mode != "" {
@@ -34,24 +40,50 @@ func TestMain(m *testing.M) {
 		}
 		os.Exit(0)
 	}
-	os.Exit(m.Run())
+	dir, err := prepareHelper()
+	if err != nil {
+		fmt.Fprintln(os.Stderr, "preparar kh-helper:", err)
+		os.Exit(1)
+	}
+	helperDir = dir
+	code := m.Run()
+	_ = os.RemoveAll(dir) // melhor esforço: antivírus pode segurar o arquivo por um instante
+	os.Exit(code)
 }
 
-func helper(t *testing.T, mode string, extraEnv ...string) *Runner {
-	t.Helper()
+// prepareHelper copia o binário de teste para um diretório temporário.
+func prepareHelper() (string, error) {
 	exe, err := os.Executable()
 	if err != nil {
-		t.Fatal(err)
+		return "", err
 	}
-	dir := t.TempDir()
+	dir, err := os.MkdirTemp("", "kh-helper-")
+	if err != nil {
+		return "", err
+	}
 	name := "kh-helper"
 	if filepath.Ext(exe) == ".exe" {
 		name += ".exe"
 	}
-	link := filepath.Join(dir, name)
-	if err := os.Link(exe, link); err != nil { // hard link: barato e portátil
-		t.Skipf("não foi possível criar link do binário de teste: %v", err)
+	src, err := os.Open(exe)
+	if err != nil {
+		return "", err
 	}
+	defer src.Close()
+	dst, err := os.OpenFile(filepath.Join(dir, name), os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o755)
+	if err != nil {
+		return "", err
+	}
+	if _, err := io.Copy(dst, src); err != nil {
+		dst.Close()
+		return "", err
+	}
+	return dir, dst.Close()
+}
+
+func helper(t *testing.T, mode string, extraEnv ...string) *Runner {
+	t.Helper()
+	dir := helperDir
 	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
 	secrets := map[string]string{
 		"vault://proj/dev/TOKEN": "tok-SUPER-secreto",
