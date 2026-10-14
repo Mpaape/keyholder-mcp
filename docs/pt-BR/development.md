@@ -70,7 +70,7 @@ As páginas de tutorial incluem os arquivos de `demo/tutorials/*/expected/` na g
 | `aurumcode.yml` | Revisão de código por IA com as regras do projeto, gitleaks e Semgrep |
 | `release.yml` | Quando a `main` recebe uma versão do CHANGELOG ainda sem release (ou numa tag `v*`): testa, compila os binários para seis plataformas e publica com `SHA256SUMS` e a seção do CHANGELOG |
 | `docs.yml` | Gera o site com `--strict` em todo PR; publica no GitHub Pages a partir do `main` |
-| `attribution.yml` | Remove atribuição de IA de PRs, issues e comentários; reprova um PR cujos commits a tragam |
+| `attribution.yml` | Uso do mantenedor: remove atribuição de IA dos pull requests, issues e comentários dele. Não afeta contribuidores |
 
 ## Gate do AurumCode no seu agente
 
@@ -83,25 +83,14 @@ claude                                         # aprove o servidor de projeto "a
 
 Sem provedor funcionando o gate responde `inconclusive`, nunca `pass`.
 
-## Publicar uma versão
+## Branches e releases
 
-Mova as entradas de `## Unreleased` para um novo título `## X.Y.Z - data` no `CHANGELOG.md` e faça o merge. O `release.yml` vê uma versão sem release, cria a tag `vX.Y.Z` nesse commit e publica os binários. Enviar você mesmo uma tag `vX.Y.Z` também funciona.
+Só dois branches: `dev`, onde toda mudança entra, e `main`, o que está publicado. O `main` só muda por pull request de `dev`, com merge commit depois que os checks passam; em seguida o `dev` avança até o `main`. Contribuidores abrem pull request para o `dev` a partir de um fork. Detalhes e passos: [CONTRIBUTING.md](https://github.com/Mpaape/keyholder-mcp/blob/main/CONTRIBUTING.md#português).
 
-## Sem atribuição de IA
-
-Commits, pull requests, issues e comentários não levam atribuição de IA. Ative o hook local uma vez por clone:
-
-```bash
-git config core.hooksPath .githooks
-```
-
-O Claude Code carrega o `.claude/settings.json`, que desliga a atribuição dele e bloqueia comandos que a publicariam. No GitHub, o `attribution.yml` a remove dos textos e reprova um PR cujos commits a tragam. Os três leem `scripts/attribution/patterns.txt`.
+Para publicar uma versão, mova as entradas de `## Unreleased` para `## X.Y.Z - data` no `CHANGELOG.md` no `dev` e leve ao `main`. O `release.yml` vê uma versão sem release, cria a tag `vX.Y.Z` nesse commit e publica os binários.
 
 ## Contribuir
 
-1. Crie um branch a partir do `main`.
-2. Abra um pull request. O AurumCode o revisa; o check `aurumcode/policy-gate` precisa passar.
-3. Uma mudança numa tool, numa variável ou no fluxo de acesso atualiza o `README.md`, a documentação e as versões em português no mesmo PR.
-4. Acrescente uma linha ao `CHANGELOG.md` em `## Unreleased`.
+Veja o [CONTRIBUTING.md](https://github.com/Mpaape/keyholder-mcp/blob/main/CONTRIBUTING.md#português): crie o branch a partir do `dev`, teste, atualize as duas línguas da documentação e o CHANGELOG, abra o pull request para o `dev`.
 
 O inglês é a língua principal do repositório: código, comentários, mensagens e commits. O português é a segunda língua da documentação.
