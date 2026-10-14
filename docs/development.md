@@ -70,6 +70,17 @@ Tutorial pages include the files in `demo/tutorials/*/expected/` at build time, 
 | `aurumcode.yml` | AI code review with the project rules, gitleaks and Semgrep |
 | `docs.yml` | Builds the site with `--strict` on every PR; publishes it to GitHub Pages from `main` |
 
+## AurumCode gate in your agent
+
+`.mcp.json` registers [`aurumcode mcp`](https://github.com/Mpaape/AurumCode/blob/v2.0.0/docs/agentes.md) for Claude Code, so the agent can ask the same gate the CI uses (`aurum_gate`, `aurum_review`, `aurum_rules`, `aurum_explain`) before it commits. It needs the `aurumcode` binary on the `PATH` and your key in the shell that starts Claude Code; the key is never written to the file:
+
+```bash
+read -s LLM_API_KEY && export LLM_API_KEY     # provider defaults: Anthropic, claude-haiku-5-5
+claude                                         # approve the project server "aurum" once
+```
+
+Without a working provider the gate answers `inconclusive`, never `pass`.
+
 ## Contributing
 
 1. Branch from `main`.

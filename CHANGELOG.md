@@ -8,6 +8,8 @@
 - Executable tutorials under `demo/tutorials/` (quickstart, temporary access, guardrails, masking), run against a real OpenBao dev server; CI fails when an output drifts from `expected/`.
 - `khcall`, a minimal MCP client for debugging and for the tutorials.
 - `README.pt-BR.md`, `CONTRIBUTING.md`.
+- `.mcp.json` with the AurumCode gate (`aurumcode mcp`) for Claude Code.
+- `Review failure reason` job: copies the AurumCode error lines of a failed review into a PR annotation.
 - CI with `gofmt`, `go vet`, `go test` and `go build` on Linux, Windows and macOS.
 - MCP server in Go with `keyholder_status`, `keyholder_list` and `keyholder_run`.
 - Runner with `{{vault://...}}` placeholders resolved only at execution time, without a shell, with masked output and time and output limits.

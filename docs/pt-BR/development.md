@@ -70,6 +70,17 @@ As páginas de tutorial incluem os arquivos de `demo/tutorials/*/expected/` na g
 | `aurumcode.yml` | Revisão de código por IA com as regras do projeto, gitleaks e Semgrep |
 | `docs.yml` | Gera o site com `--strict` em todo PR; publica no GitHub Pages a partir do `main` |
 
+## Gate do AurumCode no seu agente
+
+O `.mcp.json` registra o [`aurumcode mcp`](https://github.com/Mpaape/AurumCode/blob/v2.0.0/docs/agentes.md) para o Claude Code, então o agente consulta o mesmo gate do CI (`aurum_gate`, `aurum_review`, `aurum_rules`, `aurum_explain`) antes de commitar. Precisa do binário `aurumcode` no `PATH` e da sua chave no shell que abre o Claude Code; a chave nunca vai para o arquivo:
+
+```bash
+read -s LLM_API_KEY && export LLM_API_KEY     # padrões do provedor: Anthropic, claude-haiku-5-5
+claude                                         # aprove o servidor de projeto "aurum" uma vez
+```
+
+Sem provedor funcionando o gate responde `inconclusive`, nunca `pass`.
+
 ## Contribuir
 
 1. Crie um branch a partir do `main`.
