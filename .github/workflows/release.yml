@@ -37,7 +37,8 @@ jobs:
           if [ "${GITHUB_REF_TYPE}" = tag ]; then
             tag="${GITHUB_REF_NAME}"
           else
-            ver="$(grep -m1 -oE '^## [0-9]+\.[0-9]+\.[0-9]+' CHANGELOG.md | cut -d' ' -f2 || true)"
+            # Same heading forms the notes step accepts: "## 1.2.3" or "## [1.2.3]".
+            ver="$(grep -m1 -oE '^## \[?[0-9]+\.[0-9]+\.[0-9]+' CHANGELOG.md | cut -d' ' -f2 | tr -d '[' || true)"
             if [ -z "$ver" ]; then echo "no released version in CHANGELOG.md"; echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0; fi
             tag="v${ver}"
             if gh release view "$tag" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
