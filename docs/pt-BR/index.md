@@ -1,4 +1,5 @@
 ---
+title: Keyholder MCP
 hide:
   - navigation
   - toc
