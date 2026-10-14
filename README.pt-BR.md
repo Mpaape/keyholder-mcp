@@ -52,6 +52,10 @@ Depois cadastre o `keyholder-mcp` no seu cliente MCP com `BAO_ADDR`, `BAO_WRAPPI
 
 Detalhes: [Modelo de segurança](https://mpaape.github.io/keyholder-mcp/pt-BR/security/).
 
+## Comparação
+
+Outros servidores MCP para OpenBao e Vault ([mcp-vault](https://github.com/Cloud-Temple/mcp-vault), [openbao-mcp](https://github.com/Knuckles-Team/openbao-mcp), o [vault-mcp-server](https://github.com/hashicorp/vault-mcp-server) da HashiCorp) dão ao agente tools para ler e administrar o cofre, então o modelo pode receber valores de segredos. O Keyholder não tem tool que leia um valor: o agente só usa as credenciais, por meio de comandos, e lê a saída mascarada. Lado a lado, com fontes: [Comparação](https://mpaape.github.io/keyholder-mcp/pt-BR/comparison/).
+
 ## Documentação
 
 | Página | Conteúdo |

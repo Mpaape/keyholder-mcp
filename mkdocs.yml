@@ -87,6 +87,7 @@ nav:
   - How it works:
     - Architecture: architecture.md
     - Security model: security.md
+    - How it compares: comparison.md
     - Specification: spec.md
   - Contributing:
     - Development: development.md
@@ -105,6 +106,7 @@ nav:
     - Windows e WSL: pt-BR/windows-wsl.md
     - Arquitetura: pt-BR/architecture.md
     - Modelo de segurança: pt-BR/security.md
+    - Comparação: pt-BR/comparison.md
     - Especificação: pt-BR/spec.md
     - Desenvolvimento: pt-BR/development.md
     - Revisão de código: pt-BR/review.md

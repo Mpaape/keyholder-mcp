@@ -1,3 +1,220 @@
 /* Small tweaks over Material. */
 .md-typeset h2 { margin-top: 1.6em; }
 .md-typeset .grid.cards > ul > li { border-radius: 0.4rem; }
+
+/* ------------------------------------------------------------------
+   Home page. One idea carries it: the same request seen by two
+   readers. The API gets the value (brass, the colour of a key); the
+   agent gets a sealed tag (violet, the vault). Every other section
+   stays quiet so that contrast is what people remember.
+   ------------------------------------------------------------------ */
+
+:root,
+[data-md-color-scheme="default"] {
+  --kh-ink: #1e2633;
+  --kh-steel: #5d6b7a;
+  --kh-line: #d9dee5;
+  --kh-plate: #f5f7fa;
+  --kh-brass: #8a5d0f;
+  --kh-brass-bg: #fbf1dc;
+  --kh-seal: #5b3cc4;
+  --kh-seal-bg: #efeafd;
+  --kh-ok: #2e7d57;
+}
+
+[data-md-color-scheme="slate"] {
+  --kh-ink: #e6e9ef;
+  --kh-steel: #9aa6b4;
+  --kh-line: #2f3847;
+  --kh-plate: #1b2230;
+  --kh-brass: #e8b75a;
+  --kh-brass-bg: #3a2c12;
+  --kh-seal: #c2b0ff;
+  --kh-seal-bg: #2c2350;
+  --kh-ok: #6ccb98;
+}
+
+.kh-home { color: var(--kh-ink); }
+.md-typeset .kh-home h1 { display: none; } /* the hero carries the title */
+
+/* Hero ------------------------------------------------------------- */
+.kh-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 2rem;
+  margin: 0.5rem 0 3rem;
+  align-items: center;
+}
+@media (min-width: 60em) {
+  .kh-hero { grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 3rem; }
+}
+.md-typeset .kh-hero__title {
+  font-size: 2.35rem;
+  line-height: 1.12;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 1rem;
+  color: var(--kh-ink);
+  max-width: 16ch;
+}
+.md-typeset .kh-hero__lede {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--kh-steel);
+  max-width: 34em;
+  margin: 0 0 1.4rem;
+}
+.md-typeset .kh-hero .md-button { margin: 0 0.5rem 0.5rem 0; }
+
+/* The demo: one request, two readers ------------------------------- */
+.kh-demo {
+  font-family: var(--md-code-font-family);
+  font-size: 0.68rem;
+  line-height: 1.55;
+}
+.kh-demo__pane {
+  background: var(--kh-plate);
+  border: 1px solid var(--kh-line);
+  border-radius: 10px;
+  padding: 0.8rem 1rem;
+  overflow-x: auto;
+}
+.kh-demo__who {
+  font-family: var(--md-text-font-family);
+  font-size: 0.66rem;
+  font-weight: 600;
+  color: var(--kh-steel);
+  margin: 0 0 0.35rem;
+}
+.kh-demo__code { margin: 0; white-space: pre; color: var(--kh-ink); }
+/* The answers wrap: a masked reference must read whole, not scroll away. */
+.kh-demo__split .kh-demo__code { white-space: pre-wrap; overflow-wrap: anywhere; }
+.kh-ref {
+  color: var(--kh-seal);
+  border-bottom: 1px dashed currentColor;
+}
+.kh-value {
+  color: var(--kh-brass);
+  background: var(--kh-brass-bg);
+  border-radius: 4px;
+  padding: 0 0.25em;
+}
+.kh-hidden {
+  color: var(--kh-seal);
+  background: var(--kh-seal-bg);
+  border-radius: 4px;
+  padding: 0 0.25em;
+}
+.kh-demo__fork { display: none; }
+@media (min-width: 40em) {
+  /* A request that forks into two readers: a stem from the call, a bar,
+     and a drop into the centre of each answer. */
+  .kh-demo__fork {
+    display: block;
+    position: relative;
+    height: 0.8rem;
+    margin: 0.8rem 25% 0;
+    border: 1px solid var(--kh-line);
+    border-bottom: 0;
+    border-radius: 8px 8px 0 0;
+  }
+  .kh-demo__fork::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: -0.8rem;
+    height: 0.8rem;
+    border-left: 1px solid var(--kh-line);
+  }
+}
+.kh-demo__split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.8rem;
+  margin-top: 0.8rem;
+}
+@media (min-width: 40em) {
+  .kh-demo__split { margin-top: 0; }
+  .kh-demo__split { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}
+.kh-demo__pane--api { border-color: color-mix(in srgb, var(--kh-brass) 45%, var(--kh-line)); }
+.kh-demo__pane--agent { border-color: color-mix(in srgb, var(--kh-seal) 45%, var(--kh-line)); }
+.kh-demo__note {
+  font-family: var(--md-text-font-family);
+  font-size: 0.64rem;
+  color: var(--kh-steel);
+  margin: 0.6rem 0 0;
+}
+.kh-demo__note a { color: inherit; text-decoration: underline; }
+
+/* The one orchestrated moment: the request goes out, then the two
+   answers appear, value first, mask second. Runs once on load. */
+@media (prefers-reduced-motion: no-preference) {
+  .kh-demo__fork,
+  .kh-demo__pane--api,
+  .kh-demo__pane--agent { animation: kh-in 0.45s ease-out both; }
+  .kh-demo__fork { animation-delay: 0.5s; }
+  .kh-demo__pane--api { animation-delay: 0.9s; }
+  .kh-demo__pane--agent { animation-delay: 1.5s; }
+  .kh-demo__pane--agent .kh-hidden { animation: kh-seal 0.6s ease-out 2s both; }
+}
+@keyframes kh-in {
+  from { opacity: 0; translate: 0 6px; }
+  to { opacity: 1; translate: 0 0; }
+}
+@keyframes kh-seal {
+  from { box-shadow: 0 0 0 0 color-mix(in srgb, var(--kh-seal) 55%, transparent); }
+  to { box-shadow: 0 0 0 6px transparent; }
+}
+
+/* A run, in order -------------------------------------------------- */
+/* ol.kh-steps beats Material's .md-typeset ol:not([hidden]) { display: flow-root }. */
+.md-typeset ol.kh-steps {
+  list-style: none;
+  counter-reset: kh-step;
+  margin: 1rem 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.2rem 2rem;
+}
+@media (min-width: 50em) {
+  .md-typeset ol.kh-steps { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+.md-typeset .kh-steps > li {
+  counter-increment: kh-step;
+  margin: 0;
+  padding-top: 0.7rem;
+  border-top: 2px solid var(--kh-line);
+}
+.md-typeset .kh-steps > li::before {
+  content: counter(kh-step);
+  display: block;
+  font-size: 1.6rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--kh-steel);
+  margin-bottom: 0.4rem;
+}
+.md-typeset .kh-steps > li:nth-child(3) { border-top-color: var(--kh-brass); }
+.md-typeset .kh-steps > li:nth-child(3)::before { color: var(--kh-brass); }
+.md-typeset .kh-steps strong { display: block; color: var(--kh-ink); margin-bottom: 0.2rem; }
+.md-typeset .kh-steps p { margin: 0; color: var(--kh-steel); font-size: 0.75rem; line-height: 1.55; }
+
+/* Comparison table marks: words carry the meaning, colour helps. */
+.md-typeset .kh-yes { color: var(--kh-ok); font-weight: 600; }
+.md-typeset .kh-no { color: var(--kh-brass); font-weight: 600; }
+.md-typeset .kh-unk { color: var(--kh-steel); }
+.md-typeset .kh-compare table th:first-child,
+.md-typeset .kh-compare table td:first-child { min-width: 11rem; }
+.md-typeset .kh-compare tr > :nth-child(2) { background: color-mix(in srgb, var(--kh-seal-bg) 55%, transparent); }
+
+/* Guarantees and limits side by side. */
+.kh-two {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0 2.5rem;
+}
+@media (min-width: 50em) {
+  .kh-two { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+}

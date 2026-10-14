@@ -17,6 +17,10 @@ O Keyholder reduz o alcance de um vazamento de credencial: os valores ficam fora
 | O agente redireciona o filho para outro cofre | Nomes de variáveis reservados são recusados em `env` | [Proteções](tutorials/guardrails.md) |
 | Um comando que não termina | Timeout e teto de 64 KiB de saída | [Configuração](configuration.md#keyholder_run) |
 
+## Em relação a outros servidores MCP
+
+Os outros servidores MCP de OpenBao e Vault que encontramos expõem uma tool que lê um segredo para o modelo; o Keyholder não tem nenhuma. Veja a [Comparação](comparison.md).
+
 ## Limites conhecidos
 
 Não são bugs; são a borda do que este desenho consegue fazer.

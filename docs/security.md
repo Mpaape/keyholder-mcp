@@ -17,6 +17,10 @@ Keyholder reduces how far a credential leak can go: values stay out of the conve
 | The agent redirects the child to another vault | Reserved variable names refused in `env` | [Guardrails](tutorials/guardrails.md) |
 | A runaway command | Timeout and 64 KiB output cap | [Configuration](configuration.md#keyholder_run) |
 
+## Compared with other MCP servers
+
+The other OpenBao and Vault MCP servers we found expose a tool that reads a secret for the model; Keyholder has none. See [How it compares](comparison.md).
+
 ## Known limits
 
 These are not bugs; they are the edge of what this design can do.

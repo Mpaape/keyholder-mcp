@@ -52,6 +52,10 @@ Then add `keyholder-mcp` to your MCP client with `BAO_ADDR`, `BAO_WRAPPING_TOKEN
 
 Details: [Security model](https://mpaape.github.io/keyholder-mcp/security/).
 
+## How it compares
+
+Other MCP servers for OpenBao and Vault ([mcp-vault](https://github.com/Cloud-Temple/mcp-vault), [openbao-mcp](https://github.com/Knuckles-Team/openbao-mcp), HashiCorp's [vault-mcp-server](https://github.com/hashicorp/vault-mcp-server)) give the agent tools to read and manage the vault, so the model can receive secret values. Keyholder has no tool that reads a value: the agent only uses credentials, through commands, and reads masked output. Side by side, with sources: [How it compares](https://mpaape.github.io/keyholder-mcp/comparison/).
+
 ## Documentation
 
 | Page | Content |

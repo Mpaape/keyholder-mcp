@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+
+- Documentation home redesigned around one recorded request seen by the API and by the agent.
+- "How it compares" page (EN and pt-BR) against mcp-vault, openbao-mcp and vault-mcp-server, with sources; linked from the README and the security model.
+
 ## 0.1.0 - 2026-10-14
 
 ### Added

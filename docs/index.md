@@ -1,66 +1,122 @@
+---
+hide:
+  - navigation
+  - toc
+---
+
+<div class="kh-home" markdown>
+
 # Keyholder MCP
 
-**Let AI agents use your credentials without ever seeing them.**
+<div class="kh-hero" markdown>
 
-Keyholder MCP is an [MCP](https://modelcontextprotocol.io) server that sits between your AI coding agent and [OpenBao](https://openbao.org). The agent sees credential **names** and asks to run commands with them; the value is filled in only when the command runs, and the output comes back with the value masked. Access is temporary: it expires on its own.
+<div markdown>
 
-It is free and open source (MIT): code, issues and releases at [github.com/Mpaape/keyholder-mcp](https://github.com/Mpaape/keyholder-mcp).
+<p class="kh-hero__title">Your AI agent uses the credential. It never sees it.</p>
 
-[Get started](getting-started.md){ .md-button .md-button--primary } [Run the quickstart](tutorials/quickstart.md){ .md-button }
+<p class="kh-hero__lede">Keyholder MCP is an <a href="https://modelcontextprotocol.io">MCP</a> server over <a href="https://openbao.org">OpenBao</a>. The agent writes a reference; Keyholder puts the real value into the command only when it runs, and hands the output back with the value masked. Access ends on its own.</p>
 
-## The problem
+[Get started](getting-started.md){ .md-button .md-button--primary } [Download](https://github.com/Mpaape/keyholder-mcp/releases){ .md-button }
 
-Agents need API keys, cloud credentials and tokens to do real work. Pasting them into the chat, a `.env` in the repository or a command the model writes puts them in the transcript, in logs and in places you will forget. Keyholder keeps them in the vault and gives the agent a reference instead:
+</div>
 
-```text
-curl -H "Authorization: Bearer {{vault://my-project/dev/API_TOKEN}}" https://api.example.com/health
+<div class="kh-demo" aria-label="One request seen by the API and by the agent">
+  <div class="kh-demo__pane">
+    <p class="kh-demo__who">The agent asks keyholder_run</p>
+<pre class="kh-demo__code">curl -sS \
+  -H "Authorization: Bearer <span class="kh-ref">{{vault://my-project/dev/API_TOKEN}}</span>" \
+  <span class="kh-ref">{{vault://my-project/dev/API_URL}}</span></pre>
+  </div>
+  <div class="kh-demo__fork" aria-hidden="true"></div>
+  <div class="kh-demo__split">
+    <div class="kh-demo__pane kh-demo__pane--api">
+      <p class="kh-demo__who">The API receives</p>
+<pre class="kh-demo__code">Authorization: Bearer
+<span class="kh-value">tok-fake-not-a-real-secret</span></pre>
+    </div>
+    <div class="kh-demo__pane kh-demo__pane--agent">
+      <p class="kh-demo__who">The agent reads back</p>
+<pre class="kh-demo__code">api says: hello, caller with
+header Authorization: Bearer
+<span class="kh-hidden">[hidden:vault://my-project/dev/API_TOKEN]</span></pre>
+    </div>
+  </div>
+  <p class="kh-demo__note">A recorded run with a fake token, checked on every CI build: <a href="tutorials/quickstart/">see the quickstart</a>.</p>
+</div>
+
+</div>
+
+## Why not just give the agent the key
+
+Agents need API keys, cloud credentials and tokens to do real work. Pasted into the chat, a `.env` file or a command the model writes, a credential ends up in the transcript, in logs and in places you will forget. The other OpenBao and Vault MCP servers we found have a tool that reads a secret for the model. Keyholder has none: the model only ever holds names.
+
+## A run, start to finish
+
+<ol class="kh-steps">
+  <li><strong>You store the secret</strong><p>In OpenBao, one path per project. The OpenBao web UI or the <code>bao</code> CLI, outside the chat.</p></li>
+  <li><strong>You issue a session</strong><p>A wrapped, single-use token with a TTL, given to <code>keyholder-mcp</code> through its environment.</p></li>
+  <li><strong>The agent runs a command</strong><p>It sends <code>{{vault://…}}</code>. Keyholder resolves it at execution, runs an allowed command without a shell, masks the output.</p></li>
+  <li><strong>Access ends</strong><p>At the TTL every call fails with a clear message. You renew outside the chat; the agent cannot.</p></li>
+</ol>
+
+## How it compares
+
+<div class="kh-compare" markdown>
+
+| | Keyholder MCP | [mcp-vault](https://github.com/Cloud-Temple/mcp-vault) | [openbao-mcp](https://github.com/Knuckles-Team/openbao-mcp) | [vault-mcp-server](https://github.com/hashicorp/vault-mcp-server) |
+| --- | --- | --- | --- | --- |
+| Backend | OpenBao | OpenBao, embedded | OpenBao | HashiCorp Vault |
+| Model receives secret values | <span class="kh-yes">Never</span> | <span class="kh-no">Yes, documented</span> | <span class="kh-no">Has a read tool</span> | <span class="kh-no">Yes, documented</span> |
+| Value injected at run time | <span class="kh-yes">Yes</span> | <span class="kh-unk">Not documented</span> | <span class="kh-unk">Not documented</span> | <span class="kh-unk">Not documented</span> |
+| Output masked | <span class="kh-yes">Yes</span> | <span class="kh-unk">Not documented</span> | <span class="kh-unk">Not documented</span> | <span class="kh-unk">Not documented</span> |
+| Temporary access | <span class="kh-yes">Wrapped token, TTL</span> | <span class="kh-yes">Wrapping, SSH CA, PKI</span> | <span class="kh-unk">Not documented</span> | <span class="kh-unk">Not documented</span> |
+| What the agent can do | Run allowed commands | 39 tools: secrets, SSH, PKI, policies | Vault operations | Mounts, KV, PKI |
+
+</div>
+
+From each project's README on 2026-10-14. They manage the vault for the agent; Keyholder only lets the agent use it. Details and sources: [How it compares](comparison.md).
+
+## What it protects, and what it does not
+
+<div class="kh-two" markdown>
+
+<div markdown>
+
+**Protects**
+
+- Values stay out of the chat, tool results, errors and logs.
+- A leaked session token dies with its TTL; a wrapped token works once.
+- Only commands you name run, and never through a shell.
+- References outside the project scope are refused.
+
+</div>
+
+<div markdown>
+
+**Does not**
+
+- Hide the value from the command it runs: that command needs it.
+- Catch an encoded value: an allowed interpreter can escape the mask, as [the masking tutorial](tutorials/masking.md) shows.
+- Stop a hostile agent running as your own OS user.
+
+</div>
+
+</div>
+
+The full list is in the [security model](security.md).
+
+## Start in five minutes
+
+```bash
+bao server -dev -dev-root-token-id=root-dev        # in-memory, for a first try
+export BAO_ADDR=http://127.0.0.1:8200 BAO_TOKEN=root-dev
+bao kv put -mount=secret my-project/dev API_TOKEN=your-api-token
+bao policy write my-project-read deploy/policy-project-read.hcl
+bao token create -policy=my-project-read -ttl=8h -explicit-max-ttl=8h -wrap-ttl=5m -field=wrapping_token
 ```
 
-The agent writes the reference. Keyholder resolves it at execution time, runs `curl` without a shell, and returns:
+Then add `keyholder-mcp` to [Claude Code, Cursor or Codex](clients.md) with that wrapped token. Every step, explained: [Getting started](getting-started.md). Every behaviour, with real output: [Tutorials](tutorials/index.md).
 
-```text
-api says: hello, caller with header Authorization: Bearer [hidden:vault://my-project/dev/API_TOKEN]
-```
+Version 0.1.0, MIT licensed. [Source, issues and releases on GitHub](https://github.com/Mpaape/keyholder-mcp). Next on the [roadmap](spec.md#11-roadmap): dynamic AWS and GCP credentials, access requests from the agent, SSH.
 
-## How it works
-
-```mermaid
-flowchart LR
-    agent["AI agent<br/>(Claude Code, Cursor, Codex)"] -- "MCP tools:<br/>names only" --> kh["keyholder-mcp"]
-    kh -- "HTTP, short-lived token" --> bao["OpenBao<br/>KV v2"]
-    kh -- "runs, no shell,<br/>value injected" --> cmd["allowed command<br/>(curl, aws, gcloud)"]
-    cmd --> api["API / cloud"]
-    human["You"] -- "wrapped token,<br/>TTL + TOTP" --> bao
-```
-
-1. You store secrets in OpenBao, one path per project.
-2. You issue a **wrapped**, single-use token with a short TTL, outside the chat.
-3. `keyholder-mcp` unwraps it at startup and keeps the real token only in memory.
-4. The agent lists references (`keyholder_list`) and runs allowed commands with placeholders (`keyholder_run`).
-5. When the token expires, the tools fail with a clear message and you renew access outside the chat.
-
-## What it offers
-
-| Capability | What you get | Tutorial |
-| --- | --- | --- |
-| **Late binding** | `{{vault://path/KEY}}` in arguments or environment, resolved only when the command runs | [Quickstart](tutorials/quickstart.md) |
-| **Masking** | Every resolved value is replaced by `[hidden:vault://...]` in stdout, stderr and errors | [Masking](tutorials/masking.md) |
-| **Temporary access** | Wrapped single-use tokens, TTL, predictable failure on expiry | [Temporary access](tutorials/access.md) |
-| **Project scope** | Only references under `KEYHOLDER_SCOPE` are listed or resolved | [Guardrails](tutorials/guardrails.md) |
-| **Allow list** | Only named commands run, never through a shell | [Guardrails](tutorials/guardrails.md) |
-| **Clean environment** | `BAO_*`, `VAULT_*` and `KEYHOLDER_*` never reach the child process | [Guardrails](tutorials/guardrails.md) |
-| **Audit trail** | One stderr line per run: command, references, exit code; never values | [Configuration](configuration.md#audit-trail) |
-| **Any MCP client** | Claude Code, Cursor, Codex and others over stdio | [MCP clients](clients.md) |
-| **Windows, Linux, macOS** | A single Go binary; CI on the three systems | [Windows and WSL](windows-wsl.md) |
-
-## What it does not do
-
-Keyholder is honest about its limits, and the [security model](security.md) lists them:
-
-- The command it runs receives the value, as any real use of a credential does.
-- Masking only matches the exact value. An allowed interpreter can encode a secret and escape it; the [masking tutorial](tutorials/masking.md) shows this. That is why the allow list must never contain `sh`, `bash`, `python` or `env`.
-- It does not protect against a hostile agent that runs as your own operating system user.
-
-## Status
-
-Version 0.1.0, the first [release](https://github.com/Mpaape/keyholder-mcp/releases). The server, the runner and the OpenBao client work end to end and every tutorial on this site is a real, re-checked run against OpenBao 2.7.1. Dynamic AWS and GCP credentials, `keyholder_request_access` and SSH come next; see the [specification](spec.md#11-roadmap).
+</div>
