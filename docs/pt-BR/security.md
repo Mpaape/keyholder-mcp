@@ -16,6 +16,8 @@ O Keyholder reduz o alcance de um vazamento de credencial: os valores ficam fora
 | O processo filho lê o token do cofre | `BAO_*`, `VAULT_*`, `KEYHOLDER_*` removidos do ambiente dele | [Proteções](tutorials/guardrails.md) |
 | O agente redireciona o filho para outro cofre | Nomes de variáveis reservados são recusados em `env` | [Proteções](tutorials/guardrails.md) |
 | Um comando que não termina | Timeout e teto de 64 KiB de saída | [Configuração](configuration.md#keyholder_run) |
+| Uma chave de nuvem sobrevive à tarefa | Credenciais dinâmicas lidas na execução e revogadas quando o comando termina (usuários IAM da AWS são apagados) | [Credenciais de nuvem](tutorials/cloud.md) |
+| O agente escolhe qualquer caminho de engine | Caminhos dinâmicos precisam estar em `KEYHOLDER_DYNAMIC`, conferidos antes da leitura | [Credenciais de nuvem](tutorials/cloud.md) |
 
 ## Em relação a outros servidores MCP
 
@@ -28,7 +30,8 @@ Não são bugs; são a borda do que este desenho consegue fazer.
 - **O comando executado recebe o valor.** Qualquer uso real de credencial recebe. A garantia é sobre a conversa com o modelo, não sobre o processo que usa o segredo.
 - **O mascaramento só casa o valor exato.** Um interpretador liberado consegue codificá-lo e escapar; o [tutorial de mascaramento](tutorials/masking.md) demonstra. Mantenha shells e interpretadores fora de `KEYHOLDER_ALLOW`.
 - **Um agente hostil com o seu usuário do sistema consegue contornar a fronteira.** Ele poderia ler a memória do servidor ou iniciar processos fora do MCP. O Keyholder não roda com um usuário separado.
-- **Segredos do KV não têm lease.** Um segredo estático vale até você rotacioná-lo; só o token da sessão expira. Credenciais dinâmicas (AWS, GCP) estão no [roteiro](spec.md#11-roteiro).
+- **Segredos do KV não têm lease.** Um segredo estático vale até você rotacioná-lo; só o token da sessão expira. Use [credenciais dinâmicas](configuration.md#credenciais-dinamicas) onde a nuvem permitir.
+- **Nem toda credencial dinâmica pode ser revogada.** Credenciais STS da AWS e tokens de acesso do GCP só expiram (no mínimo 15 minutos no STS, até uma hora nos tokens do GCP). Prefira roles `iam_user` da AWS quando a chave precisa morrer junto com o comando.
 
 ## Modos de execução
 

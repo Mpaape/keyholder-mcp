@@ -1,0 +1,20 @@
+# The agent sees the dynamic path and how to use it, not a credential
+
+$ BAO_WRAPPING_TOKEN=<wrapped token> khcall keyholder_list
+{
+  "dynamic": [
+    {
+      "path": "aws/creds/deploy",
+      "use": "credentials: [\"aws:aws/creds/deploy\"]"
+    }
+  ],
+  "entries": [
+    {
+      "ref": "vault://my-project/gcp/ACCESS_TOKEN",
+      "version": 1
+    }
+  ],
+  "note": "Use {{vault://path/KEY}} in the args, env or files of keyholder_run. Dynamic paths are read when the command runs and revoked after it; use them through credentials or {{bao://path#field}}.",
+  "scope": "my-project"
+}
+exit_code=0

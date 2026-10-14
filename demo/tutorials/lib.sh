@@ -15,8 +15,12 @@ WORK="$(mktemp -d)"
 export BAO_ADDR="http://127.0.0.1:18200"
 # Everything is local: no proxy, so the records do not depend on the host.
 unset http_proxy https_proxy HTTP_PROXY HTTPS_PROXY no_proxy NO_PROXY all_proxy ALL_PROXY
+# No cloud credentials or settings from the host: the cloud tutorial gives
+# the commands only what Keyholder injects.
+for v in $(compgen -e | grep -E '^(AWS_|CLOUDSDK_|GOOGLE_)' || true); do unset "$v"; done
 ROOT_TOKEN="root-dev"   # dev server root token: fake, local, in memory
 PIDS=()
+VAULT_ARGS=()
 
 cleanup() {
   for p in "${PIDS[@]:-}"; do [ -n "$p" ] && kill "$p" 2>/dev/null || true; done
@@ -44,8 +48,9 @@ binaries() {
 }
 
 # start_vault starts a fresh dev server and waits until it answers.
+# Extra arguments go to the server, for example -dev-plugin-dir.
 start_vault() {
-  bao server -dev -dev-root-token-id="$ROOT_TOKEN" -dev-listen-address=127.0.0.1:18200 >"$WORK/bao.log" 2>&1 &
+  bao server -dev -dev-root-token-id="$ROOT_TOKEN" -dev-listen-address=127.0.0.1:18200 "${VAULT_ARGS[@]}" >"$WORK/bao.log" 2>&1 &
   PIDS+=($!)
   for _ in $(seq 1 50); do
     BAO_TOKEN="$ROOT_TOKEN" bao status >/dev/null 2>&1 && return 0
@@ -99,7 +104,9 @@ normalize() {
     -e 's/curl\/[0-9.]+/curl\/<version>/g' \
     -e 's/Python\/[0-9.]+/Python\/<version>/g' \
     -e 's/"token_expire_time": "[^"]*"/"token_expire_time": "<time>"/g'\
-    -e 's/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.]+(Z|[+-][0-9:]+)/<time>/g'
+    -e 's/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.]+(Z|[+-][0-9:]+)/<time>/g' \
+    -e 's/vault-token-([A-Za-z0-9_-]+)-[0-9]{9,}-[A-Za-z0-9]+/vault-token-\1-<id>/g' \
+    -e 's/"UserId": "[A-Za-z0-9]+"/"UserId": "<id>"/g'
 }
 
 # step <case> <title>: starts a case file in out/.

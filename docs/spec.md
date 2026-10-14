@@ -34,7 +34,7 @@ Alternative considered: KeePassXC with [`kdbx`](https://github.com/yarrasys/kdbx
 | --- | --- | --- |
 | R1 | Build on an existing open source vault | Done (OpenBao) |
 | R2 | Local MCP server that gives credentials to local AI agents | Done |
-| R3 | Simple environment variables (AWS, GCP, LLM keys) | Done for static values; dynamic credentials planned |
+| R3 | Simple environment variables (AWS, GCP, LLM keys) | Done: static values, and dynamic AWS and GCP credentials through `credentials` |
 | R4 | Values never appear in the chat | Done |
 | R5 | Graphical interface on the server | Done (OpenBao web UI) |
 | R6 | Windows, Linux and macOS | Done (CI on the three) |
@@ -63,7 +63,7 @@ Field-by-field reference: [Configuration](configuration.md#tools).
 ## 6. Execution modes
 
 - **Mode A, runner (preferred):** the agent sends a command with references; another process resolves and runs it. The value does not pass through the conversation.
-- **Mode B, native tools:** AWS CLI, gcloud or ssh-agent use their own mechanisms. The value may live in the tool's process and appear in debug output; no absolute isolation is promised. **[to verify]** how `gcloud` authenticates without the agent receiving a token or key.
+- **Mode B, native tools:** AWS CLI, gcloud or ssh-agent use their own mechanisms. The value may live in the tool's process and appear in debug output; no absolute isolation is promised. Verified: `gcloud` reads an access token from the file named by `CLOUDSDK_AUTH_ACCESS_TOKEN_FILE`, which the runner writes for the run and deletes after it ([cloud tutorial](tutorials/cloud.md)).
 - **Mode C, browser:** a local component fills a field. Secrecy depends on whether the agent can read the page afterwards. Out of the MVP.
 
 An integration without safe late binding must state the limit instead of pretending secrecy.
@@ -89,7 +89,9 @@ Against `bao server -dev` 2.7.1, recorded and re-checked by the [tutorials](tuto
 - `BAO_*`, `VAULT_*` and `KEYHOLDER_*` never reach the child process.
 - CI builds and tests on Linux, Windows and macOS.
 
-Not yet tested: real MCP clients end to end, AWS and GCP dynamic credentials.
+- A dynamic AWS credential from OpenBao's real AWS plugin ran the AWS CLI against a local AWS emulator (moto) and was deleted when the command ended.
+
+Not yet tested: real MCP clients end to end; the GCP plugin and real AWS accounts.
 
 ## 9. Open decisions
 
@@ -107,7 +109,7 @@ Decided: OpenBao as the vault; Go as the language; MIT license; OpenBao inside W
 | --- | --- | --- |
 | AC-01 | A stored token does not appear in the chat, a tool description or an MCP response | Met |
 | AC-02 | Real API call with a reference: the server gets the right token, the agent only the result | Met |
-| AC-03 | `aws sts get-caller-identity` and `gcloud projects list` work without the agent writing keys | Open |
+| AC-03 | `aws sts get-caller-identity` and `gcloud projects list` work without the agent writing keys | Met for AWS against an emulator, in CI; gcloud token handling met; the GCP plugin not run |
 | AC-04 | A project shows only the references in its scope | Met |
 | AC-05 | Within a session, repeated operations need no re-approval; after expiry, renewal outside the chat | Met |
 | AC-06 | Logs, MCP messages and product artifacts contain no values | Met |
@@ -117,7 +119,7 @@ Decided: OpenBao as the vault; Go as the language; MIT license; OpenBao inside W
 ## 11. Roadmap
 
 1. ~~Proof of concept and minimal MCP~~: done, released as v0.1.0.
-2. **Dynamic credentials:** OpenBao AWS and GCP plugins mapped to environment variables. Criterion: the credential expires and is revoked.
+2. ~~**Dynamic credentials:** OpenBao AWS and GCP plugins mapped to environment variables~~: done in v0.2.0. AWS `iam_user` credentials are revoked after the run; STS and GCP tokens expire on their own.
 3. **`keyholder_request_access`:** the agent asks, the human approves with TOTP, a new wrapped token reaches the server.
 4. **Persistent server guide:** storage, TLS and unseal.
 5. **SSH and browser adapters.**

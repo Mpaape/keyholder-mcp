@@ -1,0 +1,22 @@
+# The agent runs the AWS CLI with a credential made for this run
+
+$ BAO_WRAPPING_TOKEN=<wrapped token> khcall keyholder_run '{"command":"aws","args":["--endpoint-url","http://127.0.0.1:15000","sts","get-caller-identity","--query","Arn","--output","text"],"env":{"AWS_DEFAULT_REGION":"us-east-1"},"credentials":["aws:aws/creds/deploy"]}'
+{
+  "exit_code": 0,
+  "notes": [
+    "revoked 1 dynamic credential lease(s) after the run"
+  ],
+  "refs_used": [
+    "bao://aws/creds/deploy#access_key",
+    "bao://aws/creds/deploy#secret_key"
+  ],
+  "stderr": "",
+  "stdout": "arn:aws:iam::123456789012:user/vault-token-deploy-<id>\n"
+}
+--- stderr
+<timestamp> audit cmd="aws" refs=[bao://aws/creds/deploy#access_key bao://aws/creds/deploy#secret_key] exit=0 dur=<duration> status=ok
+exit_code=0
+
+IAM users left in AWS after the run (checked by the human): 0
+
+Keyholder revoked the lease when aws exited, and OpenBao deleted the user it had created for the run.

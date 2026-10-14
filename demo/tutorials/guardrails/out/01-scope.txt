@@ -9,7 +9,7 @@ $ BAO_WRAPPING_TOKEN=<wrapped token> khcall keyholder_list keyholder_run '{"comm
       "version": 1
     }
   ],
-  "note": "Use {{vault://path/KEY}} in the args or env of keyholder_run.",
+  "note": "Use {{vault://path/KEY}} in the args, env or files of keyholder_run.",
   "scope": "my-project"
 }
 ### keyholder_run

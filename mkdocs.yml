@@ -81,6 +81,7 @@ nav:
     - Temporary access: tutorials/access.md
     - Guardrails: tutorials/guardrails.md
     - Masking and its limit: tutorials/masking.md
+    - Cloud credentials: tutorials/cloud.md
   - Reference:
     - Configuration: configuration.md
     - Windows and WSL: windows-wsl.md
@@ -102,6 +103,7 @@ nav:
       - Acesso temporário: pt-BR/tutorials/access.md
       - Proteções: pt-BR/tutorials/guardrails.md
       - Mascaramento e seu limite: pt-BR/tutorials/masking.md
+      - Credenciais de nuvem: pt-BR/tutorials/cloud.md
     - Configuração: pt-BR/configuration.md
     - Windows e WSL: pt-BR/windows-wsl.md
     - Arquitetura: pt-BR/architecture.md

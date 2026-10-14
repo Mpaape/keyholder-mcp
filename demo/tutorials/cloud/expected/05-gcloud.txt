@@ -1,0 +1,14 @@
+# gcloud reads an access token from a file it gets for this run only
+
+$ BAO_WRAPPING_TOKEN=<wrapped token> khcall keyholder_run '{"command":"gcloud","args":["auth","print-access-token"],"env":{"CLOUDSDK_CONFIG":"/tmp/keyholder-tutorial-gcloud","CLOUDSDK_CORE_DISABLE_PROMPTS":"1"},"files":{"CLOUDSDK_AUTH_ACCESS_TOKEN_FILE":"{{vault://my-project/gcp/ACCESS_TOKEN}}"}}'
+{
+  "exit_code": 0,
+  "refs_used": [
+    "vault://my-project/gcp/ACCESS_TOKEN"
+  ],
+  "stderr": "",
+  "stdout": "[hidden:vault://my-project/gcp/ACCESS_TOKEN]\n"
+}
+--- stderr
+<timestamp> audit cmd="gcloud" refs=[vault://my-project/gcp/ACCESS_TOKEN] exit=0 dur=<duration> status=ok
+exit_code=0

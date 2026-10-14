@@ -15,7 +15,7 @@ agent asks:   curl -H "Authorization: Bearer {{vault://my-project/dev/API_TOKEN}
 agent reads:  api says: hello, caller with header Authorization: Bearer [hidden:vault://my-project/dev/API_TOKEN]
 ```
 
-> Status: v0.1.0, the first release. Tested end to end against OpenBao 2.7.1; every tutorial is a real, re-checked run.
+> Status: v0.2.0. Tested end to end against OpenBao 2.7.1; every tutorial is a real, re-checked run.
 
 ## Tools
 
@@ -23,7 +23,7 @@ agent reads:  api says: hello, caller with header Authorization: Bearer [hidden:
 | --- | --- | --- |
 | `keyholder_status` | Vault and session status | Sealed or not, remaining TTL, policies; never the token |
 | `keyholder_list` | References in the project scope | `vault://` names only |
-| `keyholder_run` | Runs an allowed command with `{{vault://...}}` in `args` or `env` | Exit code, masked stdout and stderr, references used |
+| `keyholder_run` | Runs an allowed command with `{{vault://...}}` in `args`, `env` or `files`, and cloud `credentials` made for the run | Exit code, masked stdout and stderr, references used |
 
 ## Quick start
 
@@ -41,6 +41,10 @@ bao token create -policy=my-project-read -ttl=8h -explicit-max-ttl=8h -wrap-ttl=
 ```
 
 Then add `keyholder-mcp` to your MCP client with `BAO_ADDR`, `BAO_WRAPPING_TOKEN`, `KEYHOLDER_SCOPE=my-project` and `KEYHOLDER_ALLOW=curl`. Full walkthrough: [Getting started](https://mpaape.github.io/keyholder-mcp/getting-started/). Client setup for Claude Code, Cursor and Codex: [MCP clients](https://mpaape.github.io/keyholder-mcp/clients/).
+
+## Cloud credentials
+
+With OpenBao's AWS or GCP secrets plugin, `credentials: ["aws:aws/creds/deploy"]` gives the AWS CLI a key created for that run and revoked when it ends; `gcp:` gives gcloud an access token file. See [Cloud credentials](https://mpaape.github.io/keyholder-mcp/tutorials/cloud/).
 
 ## Guarantees and limits
 

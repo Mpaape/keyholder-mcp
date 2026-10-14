@@ -1,0 +1,15 @@
+# The human enables the AWS secrets engine and a role (outside the chat)
+
+$ bao secrets enable -path=aws openbao-plugin-secrets-aws
+Success! Enabled the openbao-plugin-secrets-aws secrets engine at: aws/
+exit_code=0
+
+$ bao write aws/config/root access_key=moto-root secret_key=moto-root-secret region=us-east-1 iam_endpoint=http://127.0.0.1:15000 sts_endpoint=http://127.0.0.1:15000
+Success! Data written to: aws/config/root
+exit_code=0
+
+$ bao write aws/roles/deploy credential_type=iam_user policy_document={"Version":"2012-10-17","Statement":[{"Effect":"Allow","Action":"sts:GetCallerIdentity","Resource":"*"}]}
+Success! Data written to: aws/roles/deploy
+exit_code=0
+
+The emulator's root keys are fake. With real AWS they are an IAM user that may create users; the agent never gets them.

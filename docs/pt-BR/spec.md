@@ -34,7 +34,7 @@ Alternativa considerada: KeePassXC com [`kdbx`](https://github.com/yarrasys/kdbx
 | --- | --- | --- |
 | R1 | Usar um cofre open source existente | Feito (OpenBao) |
 | R2 | Servidor MCP local que entrega credenciais a agentes de IA locais | Feito |
-| R3 | Variáveis de ambiente simples (AWS, GCP, chaves de LLM) | Feito para valores estáticos; credenciais dinâmicas planejadas |
+| R3 | Variáveis de ambiente simples (AWS, GCP, chaves de LLM) | Feito: valores estáticos, e credenciais dinâmicas de AWS e GCP via `credentials` |
 | R4 | Valores nunca aparecem no chat | Feito |
 | R5 | Interface gráfica no servidor | Feito (interface web do OpenBao) |
 | R6 | Windows, Linux e macOS | Feito (CI nos três) |
@@ -63,7 +63,7 @@ Referência campo a campo: [Configuração](configuration.md#tools).
 ## 6. Modos de execução
 
 - **Modo A, runner (preferido):** o agente envia um comando com referências; outro processo resolve e executa. O valor não passa pela conversa.
-- **Modo B, ferramentas nativas:** AWS CLI, gcloud ou ssh-agent usam os próprios mecanismos. O valor pode ficar no processo da ferramenta e aparecer em saída de depuração; não se promete isolamento absoluto. **[a verificar]** como o `gcloud` autentica sem o agente receber token ou chave.
+- **Modo B, ferramentas nativas:** AWS CLI, gcloud ou ssh-agent usam os próprios mecanismos. O valor pode ficar no processo da ferramenta e aparecer em saída de depuração; não se promete isolamento absoluto. Verificado: o `gcloud` lê um token de acesso do arquivo indicado em `CLOUDSDK_AUTH_ACCESS_TOKEN_FILE`, que o runner escreve para a execução e apaga depois ([tutorial de nuvem](tutorials/cloud.md)).
 - **Modo C, navegador:** um componente local preenche um campo. O sigilo depende de o agente conseguir ler a página depois. Fora do MVP.
 
 Uma integração sem late binding seguro precisa declarar o limite em vez de fingir sigilo.
@@ -89,7 +89,9 @@ Contra o `bao server -dev` 2.7.1, gravada e reconferida pelos [tutoriais](tutori
 - `BAO_*`, `VAULT_*` e `KEYHOLDER_*` nunca chegam ao processo filho.
 - O CI compila e testa em Linux, Windows e macOS.
 
-Ainda não testado: clientes MCP reais de ponta a ponta, credenciais dinâmicas de AWS e GCP.
+- Uma credencial dinâmica criada pelo plugin real de AWS do OpenBao rodou a AWS CLI contra um emulador local da AWS (moto) e foi apagada quando o comando terminou.
+
+Ainda não testado: clientes MCP reais de ponta a ponta; o plugin do GCP e contas AWS reais.
 
 ## 9. Decisões em aberto
 
@@ -107,7 +109,7 @@ Decidido: OpenBao como cofre; Go como linguagem; licença MIT; OpenBao dentro do
 | --- | --- | --- |
 | AC-01 | Um token guardado não aparece no chat, na descrição de uma tool nem em resposta MCP | Atendido |
 | AC-02 | Chamada real a uma API com referência: o servidor recebe o token certo, o agente só o resultado | Atendido |
-| AC-03 | `aws sts get-caller-identity` e `gcloud projects list` funcionam sem o agente escrever chaves | Aberto |
+| AC-03 | `aws sts get-caller-identity` e `gcloud projects list` funcionam sem o agente escrever chaves | Atendido para AWS contra um emulador, no CI; tratamento do token do gcloud atendido; plugin do GCP não executado |
 | AC-04 | Um projeto vê só as referências do seu escopo | Atendido |
 | AC-05 | Dentro da sessão, operações repetidas não pedem nova aprovação; depois da expiração, renovação fora do chat | Atendido |
 | AC-06 | Logs, mensagens MCP e artefatos do produto não contêm valores | Atendido |
@@ -117,7 +119,7 @@ Decidido: OpenBao como cofre; Go como linguagem; licença MIT; OpenBao dentro do
 ## 11. Roteiro
 
 1. ~~Prova de conceito e MCP mínimo~~: feito, publicado como v0.1.0.
-2. **Credenciais dinâmicas:** plugins de AWS e GCP do OpenBao mapeados para variáveis de ambiente. Critério: a credencial expira e é revogada.
+2. ~~**Credenciais dinâmicas:** plugins de AWS e GCP do OpenBao mapeados para variáveis de ambiente~~: feito na v0.2.0. Credenciais AWS `iam_user` são revogadas depois da execução; STS e tokens do GCP expiram sozinhos.
 3. **`keyholder_request_access`:** o agente pede, o humano aprova com TOTP, um novo token embrulhado chega ao servidor.
 4. **Guia de servidor persistente:** armazenamento, TLS e unseal.
 5. **Adaptadores de SSH e navegador.**

@@ -15,6 +15,7 @@ Checked on 2026-10-14 against each project's README. "Not documented" means the 
 | Model receives secret values | <span class="kh-yes">Never: no tool reads a value</span> | <span class="kh-no">Yes</span> (1) | <span class="kh-no">Has `openbao_read_secret`</span> (2) | <span class="kh-no">Yes</span> (3) |
 | Value injected when a command runs | <span class="kh-yes">Yes</span> | <span class="kh-unk">Not documented</span> | <span class="kh-unk">Not documented</span> | <span class="kh-unk">Not documented</span> |
 | Output masked | <span class="kh-yes">Yes, every resolved value</span> | <span class="kh-unk">Not documented</span> | <span class="kh-unk">Not documented</span> | <span class="kh-unk">Not documented</span> |
+| Cloud credentials per run | <span class="kh-yes">AWS and GCP through OpenBao's plugins; AWS IAM users revoked after the run</span> | <span class="kh-unk">Not documented</span> | <span class="kh-unk">Not documented</span> | <span class="kh-unk">Not documented</span> |
 | Temporary access | <span class="kh-yes">Wrapped single-use token, TTL</span> | <span class="kh-yes">Single-use wrapping, SSH CA, PKI</span> | <span class="kh-unk">Not documented</span> | <span class="kh-unk">Not documented</span> |
 | Scope of the agent | Run named commands with references from one project | 39 tools: secrets, SSH, PKI, policies, audit | OpenBao operations | Mounts, KV read and write, PKI |
 

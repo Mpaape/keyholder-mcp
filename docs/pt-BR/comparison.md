@@ -15,6 +15,7 @@ Conferido em 2026-10-14 no README de cada projeto. "Não documentado" quer dizer
 | O modelo recebe valores | <span class="kh-yes">Nunca: nenhuma tool lê um valor</span> | <span class="kh-no">Sim</span> (1) | <span class="kh-no">Tem `openbao_read_secret`</span> (2) | <span class="kh-no">Sim</span> (3) |
 | Valor injetado quando o comando roda | <span class="kh-yes">Sim</span> | <span class="kh-unk">Não documentado</span> | <span class="kh-unk">Não documentado</span> | <span class="kh-unk">Não documentado</span> |
 | Saída mascarada | <span class="kh-yes">Sim, todo valor resolvido</span> | <span class="kh-unk">Não documentado</span> | <span class="kh-unk">Não documentado</span> | <span class="kh-unk">Não documentado</span> |
+| Credencial de nuvem por execução | <span class="kh-yes">AWS e GCP pelos plugins do OpenBao; usuários IAM da AWS revogados depois da execução</span> | <span class="kh-unk">Não documentado</span> | <span class="kh-unk">Não documentado</span> | <span class="kh-unk">Não documentado</span> |
 | Acesso temporário | <span class="kh-yes">Token embrulhado de uso único, TTL</span> | <span class="kh-yes">Wrapping de uso único, CA de SSH, PKI</span> | <span class="kh-unk">Não documentado</span> | <span class="kh-unk">Não documentado</span> |
 | Alcance do agente | Rodar comandos nomeados com referências de um projeto | 39 tools: segredos, SSH, PKI, políticas, auditoria | Operações do OpenBao | Mounts, leitura e escrita no KV, PKI |
 

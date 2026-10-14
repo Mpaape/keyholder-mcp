@@ -47,6 +47,9 @@ jobs:
     env:
       BAO_VERSION: 2.7.1
       BAO_SHA256: 0e2f1ce10d124e03112b50dd2fbec6b78003783253bc3a91587938f39d1e2243
+      AWS_PLUGIN_TAG: secrets-aws-v0.3.1
+      AWS_PLUGIN_SHA256: 23292ee38d49468423910e3646346c4ead3184abf757eee5e93f48704c93680a
+      MOTO_VERSION: 5.2.4
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-go@v7
@@ -60,6 +63,19 @@ jobs:
           mkdir -p "$RUNNER_TEMP/bao"
           tar -xzf "$RUNNER_TEMP/$f" -C "$RUNNER_TEMP/bao" bao
           echo "$RUNNER_TEMP/bao" >> "$GITHUB_PATH"
+      # The cloud tutorial: OpenBao's AWS secrets plugin against moto, a
+      # local AWS emulator, and the aws and gcloud CLIs.
+      - name: Install the AWS secrets plugin (checksum verified) and moto
+        run: |
+          f=openbao-plugin-secrets-aws_linux_amd64_v1
+          curl -fsSLo "$RUNNER_TEMP/$f.tar.gz" "https://github.com/openbao/openbao-plugins/releases/download/${AWS_PLUGIN_TAG}/$f.tar.gz"
+          echo "${AWS_PLUGIN_SHA256}  $RUNNER_TEMP/$f.tar.gz" | sha256sum -c -
+          tar -xzf "$RUNNER_TEMP/$f.tar.gz" -C "$RUNNER_TEMP" "$f"
+          chmod +x "$RUNNER_TEMP/$f"
+          echo "KH_AWS_PLUGIN=$RUNNER_TEMP/$f" >> "$GITHUB_ENV"
+          pipx install "moto[server]==${MOTO_VERSION}"
+          aws --version
+          gcloud --version | head -1
       - name: Build binaries
         run: |
           mkdir -p "$RUNNER_TEMP/bin"
@@ -69,7 +85,7 @@ jobs:
       - name: Run tutorials and compare with expected/
         run: |
           bao version
-          for t in quickstart access guardrails masking; do
+          for t in quickstart access guardrails masking cloud; do
             echo "::group::$t"
             bash "demo/tutorials/$t/run.sh" all
             bash "demo/tutorials/$t/run.sh" --check

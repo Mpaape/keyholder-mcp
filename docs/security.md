@@ -16,6 +16,8 @@ Keyholder reduces how far a credential leak can go: values stay out of the conve
 | The child process reads the vault token | `BAO_*`, `VAULT_*`, `KEYHOLDER_*` removed from its environment | [Guardrails](tutorials/guardrails.md) |
 | The agent redirects the child to another vault | Reserved variable names refused in `env` | [Guardrails](tutorials/guardrails.md) |
 | A runaway command | Timeout and 64 KiB output cap | [Configuration](configuration.md#keyholder_run) |
+| A cloud key outlives the task | Dynamic credentials read at execution and revoked when the command ends (AWS IAM users are deleted) | [Cloud credentials](tutorials/cloud.md) |
+| The agent picks any engine path | Dynamic paths must be listed in `KEYHOLDER_DYNAMIC`, checked before the read | [Cloud credentials](tutorials/cloud.md) |
 
 ## Compared with other MCP servers
 
@@ -28,7 +30,8 @@ These are not bugs; they are the edge of what this design can do.
 - **The executed command receives the value.** Any real use of a credential does. The guarantee is about the conversation with the model, not the process that uses the secret.
 - **Masking matches the exact value only.** An allowed interpreter can encode it and escape; the [masking tutorial](tutorials/masking.md) demonstrates it. Keep shells and interpreters out of `KEYHOLDER_ALLOW`.
 - **A hostile agent with your OS user can bypass the boundary.** It could read the server's memory or start processes outside MCP. Keyholder does not run as a separate user.
-- **KV secrets have no lease.** A static secret is valid until you rotate it; only the session token expires. Dynamic credentials (AWS, GCP) are on the [roadmap](spec.md#11-roadmap).
+- **KV secrets have no lease.** A static secret is valid until you rotate it; only the session token expires. Use [dynamic credentials](configuration.md#dynamic-credentials) where the cloud allows it.
+- **Not every dynamic credential can be revoked.** AWS STS credentials and GCP access tokens only expire (at least 15 minutes for STS, up to an hour for GCP tokens). Prefer AWS `iam_user` roles when the key must die with the command.
 
 ## Execution modes
 

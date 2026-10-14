@@ -2,6 +2,17 @@
 
 ## Unreleased
 
+## 0.2.0 - 2026-10-14
+
+### Added
+
+- Dynamic secrets: `{{bao://path#field}}` reads an OpenBao path when the command runs, once per run, and every lease it created is revoked when the command ends. Paths must be listed in `KEYHOLDER_DYNAMIC`.
+- `credentials` in `keyholder_run`: `aws:<path>` sets `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` and `AWS_SESSION_TOKEN`; `gcp:<path>` gives gcloud an access token file. Inherited variables of that cloud are dropped.
+- `files` in `keyholder_run`: a variable receives the path of a temporary 0600 file holding the value, deleted after the run.
+- `notes` in the run result, and the dynamic paths in `keyholder_list`.
+- Cloud credentials tutorial (EN and pt-BR): OpenBao's real AWS plugin against a local AWS emulator (moto), and gcloud with a token file; run in CI.
+- Example policy `deploy/policy-cloud.hcl`.
+
 ## 0.1.0 - 2026-10-14
 
 ### Added

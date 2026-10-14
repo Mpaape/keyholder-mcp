@@ -9,6 +9,8 @@
 //	KEYHOLDER_KV_MOUNT    KV v2 mount (default: secret)
 //	KEYHOLDER_SCOPE       project path prefix, for example my-project
 //	KEYHOLDER_ALLOW       allowed commands, comma separated, for example curl,aws
+//	KEYHOLDER_DYNAMIC     OpenBao paths of dynamic secrets the agent may use, comma
+//	                      separated, for example aws/creds/deploy,gcp/roleset/viewer/token
 //	KEYHOLDER_TIMEOUT     maximum time per run (default: 5m)
 package main
 
@@ -26,15 +28,17 @@ import (
 	"github.com/modelcontextprotocol/go-sdk/mcp"
 
 	"keyholder-mcp/internal/bao"
+	"keyholder-mcp/internal/ref"
 	"keyholder-mcp/internal/runner"
 )
 
-var version = "0.1.0-dev"
+var version = "0.2.0-dev"
 
 type config struct {
 	mount   string
 	scope   string
 	allow   map[string]bool
+	dynamic []string
 	timeout time.Duration
 }
 
@@ -49,6 +53,15 @@ func loadConfig() (config, error) {
 		if name = strings.TrimSpace(name); name != "" {
 			c.allow[name] = true
 		}
+	}
+	for _, p := range strings.Split(os.Getenv("KEYHOLDER_DYNAMIC"), ",") {
+		if p = strings.Trim(strings.TrimSpace(p), "/"); p == "" {
+			continue
+		}
+		if err := ref.ValidPath(p); err != nil {
+			return c, fmt.Errorf("invalid KEYHOLDER_DYNAMIC entry: %w", err)
+		}
+		c.dynamic = append(c.dynamic, p)
 	}
 	if v := os.Getenv("KEYHOLDER_TIMEOUT"); v != "" {
 		d, err := time.ParseDuration(v)
@@ -68,9 +81,31 @@ func envOr(k, def string) string {
 }
 
 type listOutput struct {
-	Scope   string      `json:"scope"`
-	Entries []bao.Entry `json:"entries"`
-	Note    string      `json:"note"`
+	Scope   string         `json:"scope"`
+	Entries []bao.Entry    `json:"entries"`
+	Dynamic []dynamicEntry `json:"dynamic,omitempty"`
+	Note    string         `json:"note"`
+}
+
+// dynamicEntry describes an allowed dynamic path without reading it (a read
+// would create a credential).
+type dynamicEntry struct {
+	Path string `json:"path"`
+	Use  string `json:"use"`
+}
+
+// dynamicUse suggests how to use a dynamic path, from the path shapes of the
+// OpenBao AWS and GCP secrets engines.
+func dynamicUse(p string) string {
+	parts := strings.Split(p, "/")
+	n := len(parts)
+	switch {
+	case n >= 3 && (parts[n-2] == "creds" || parts[n-2] == "sts"):
+		return `credentials: ["aws:` + p + `"]`
+	case n >= 4 && parts[n-1] == "token" && (parts[n-3] == "roleset" || parts[n-3] == "static-account" || parts[n-3] == "impersonated-account"):
+		return `credentials: ["gcp:` + p + `"]`
+	}
+	return "{{bao://" + p + "#<field>}}"
 }
 
 var errNoSession = errors.New("no session with the vault; a human must renew access outside the chat")
@@ -104,13 +139,18 @@ func main() {
 		log.Printf("warning: KEYHOLDER_SCOPE is empty; every reference in mount %q is reachable", cfg.mount)
 	}
 
+	dyn := map[string]bool{}
+	for _, p := range cfg.dynamic {
+		dyn[p] = true
+	}
 	run := &runner.Runner{
 		Allow:   cfg.allow,
 		Scope:   cfg.scope,
+		Dynamic: dyn,
 		Timeout: cfg.timeout,
 	}
 	if store != nil {
-		run.Resolve = store.Resolve
+		run.Begin = func() runner.Session { return store.Begin() }
 	}
 
 	server := mcp.NewServer(&mcp.Implementation{Name: "keyholder-mcp", Version: version}, nil)
@@ -128,7 +168,7 @@ func main() {
 
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "keyholder_list",
-		Description: "Lists the vault:// references available in the project scope. Returns names only, never values.",
+		Description: "Lists the vault:// references in the project scope and the dynamic paths (cloud credentials) the agent may use. Returns names only, never values.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, listOutput, error) {
 		if store == nil {
 			return nil, listOutput{}, errNoSession
@@ -140,17 +180,25 @@ func main() {
 		if entries == nil {
 			entries = []bao.Entry{}
 		}
-		return nil, listOutput{
+		out := listOutput{
 			Scope:   cfg.scope,
 			Entries: entries,
-			Note:    "Use {{vault://path/KEY}} in the args or env of keyholder_run.",
-		}, nil
+			Note:    "Use {{vault://path/KEY}} in the args, env or files of keyholder_run.",
+		}
+		for _, p := range cfg.dynamic {
+			out.Dynamic = append(out.Dynamic, dynamicEntry{Path: p, Use: dynamicUse(p)})
+		}
+		if len(out.Dynamic) > 0 {
+			out.Note += " Dynamic paths are read when the command runs and revoked after it; use them through credentials or {{bao://path#field}}."
+		}
+		return nil, out, nil
 	})
 
 	mcp.AddTool(server, &mcp.Tool{
 		Name: "keyholder_run",
 		Description: "Runs an allowed command, without a shell, replacing {{vault://path/KEY}} with the value only at execution time. " +
 			"Example: command=curl, args=[\"-H\", \"Authorization: Bearer {{vault://my-project/dev/API_TOKEN}}\", \"https://api.example.com/health\"]. " +
+			"Cloud CLIs: credentials=[\"aws:aws/creds/deploy\"] sets AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_SESSION_TOKEN from one fresh credential, revoked after the run; credentials=[\"gcp:gcp/roleset/viewer/token\"] gives gcloud an access token. " +
 			"The output comes back with the values masked. Masking only catches the exact value: do not encode or print secrets on purpose.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in runner.Request) (*mcp.CallToolResult, runner.Result, error) {
 		if store == nil {

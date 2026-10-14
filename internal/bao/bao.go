@@ -5,6 +5,7 @@ package bao
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
@@ -237,4 +238,77 @@ func (s *Store) Status(ctx context.Context) (Status, error) {
 	st.Renewable, _ = sec.TokenIsRenewable()
 	st.Policies, _ = sec.TokenPolicies()
 	return st, nil
+}
+
+// Run resolves the references of one command run. Dynamic paths are read at
+// most once per run, so the fields of one AWS credential come from the same
+// lease; Finish revokes every lease the run created.
+type Run struct {
+	s       *Store
+	dynamic map[string]*api.Secret
+	leases  []lease
+}
+
+type lease struct{ id, path string }
+
+// Begin opens a run.
+func (s *Store) Begin() *Run {
+	return &Run{s: s, dynamic: map[string]*api.Secret{}}
+}
+
+// Resolve returns a vault:// value from the KV, or a bao:// field from a
+// dynamic read of its path.
+func (r *Run) Resolve(ctx context.Context, rf ref.Ref) (string, error) {
+	if !rf.Dynamic {
+		return r.s.Resolve(ctx, rf)
+	}
+	sec, ok := r.dynamic[rf.Path]
+	if !ok {
+		var err error
+		sec, err = r.s.c.Logical().ReadWithContext(ctx, rf.Path)
+		if err != nil {
+			return "", cleanErr("read "+rf.Path, err)
+		}
+		if sec == nil {
+			return "", ErrNotFound
+		}
+		r.dynamic[rf.Path] = sec
+		if sec.LeaseID != "" {
+			r.leases = append(r.leases, lease{id: sec.LeaseID, path: rf.Path})
+		}
+	}
+	v, ok := sec.Data[rf.Key]
+	if !ok || v == nil {
+		return "", ErrNotFound
+	}
+	switch t := v.(type) {
+	case string:
+		if t == "" {
+			return "", ErrNotFound
+		}
+		return t, nil
+	case bool, float64, json.Number:
+		return fmt.Sprint(t), nil
+	}
+	return "", fmt.Errorf("field %s is not text", rf.Key)
+}
+
+// Finish revokes the leases the run created, so a dynamic credential lives
+// only as long as the command. A lease that cannot be revoked still expires
+// at its TTL; the note says so.
+func (r *Run) Finish(ctx context.Context) []string {
+	var notes []string
+	revoked := 0
+	for _, l := range r.leases {
+		if err := r.s.c.Sys().RevokeWithContext(ctx, l.id); err != nil {
+			notes = append(notes, fmt.Sprintf("could not revoke the credential from %s (%v); it expires with its lease", l.path, cleanErr("revoke", err)))
+			continue
+		}
+		revoked++
+	}
+	if revoked > 0 {
+		notes = append([]string{fmt.Sprintf("revoked %d dynamic credential lease(s) after the run", revoked)}, notes...)
+	}
+	r.leases = nil
+	return notes
 }

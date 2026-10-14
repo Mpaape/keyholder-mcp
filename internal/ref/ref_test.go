@@ -69,3 +69,51 @@ func TestExpand(t *testing.T) {
 		t.Fatalf("text without placeholder changed: %q %v", out, used)
 	}
 }
+
+func TestParseDynamic(t *testing.T) {
+	r, err := Parse("bao://aws/creds/deploy#access_key")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !r.Dynamic || r.Path != "aws/creds/deploy" || r.Key != "access_key" {
+		t.Fatalf("got %+v", r)
+	}
+	if r.String() != "bao://aws/creds/deploy#access_key" {
+		t.Errorf("String() = %q", r.String())
+	}
+	for _, bad := range []string{"bao://aws/creds/deploy", "bao://#k", "bao://a/../b#k", "bao://a/b#", "bao://a b#k"} {
+		if _, err := Parse(bad); err == nil {
+			t.Errorf("Parse(%q) = nil error", bad)
+		}
+	}
+}
+
+func TestExpandDynamic(t *testing.T) {
+	got, used, err := Expand("k={{bao://aws/creds/deploy#access_key}} v={{vault://p/K}}", func(r Ref) (string, error) {
+		return "<" + r.Key + ">", nil
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if got != "k=<access_key> v=<K>" || len(used) != 2 || !used[0].Dynamic || used[1].Dynamic {
+		t.Fatalf("got %q %+v", got, used)
+	}
+}
+
+func TestValidPathAndKey(t *testing.T) {
+	for _, p := range []string{"my-project", "my-project/dev", "a.b/c_d", "aws/creds/role@x"} {
+		if err := ValidPath(p); err != nil {
+			t.Errorf("ValidPath(%q) = %v", p, err)
+		}
+	}
+	for _, p := range []string{"", "a//b", "../x", "a/./b", "a b", "a/{{x}}"} {
+		if err := ValidPath(p); err == nil {
+			t.Errorf("ValidPath(%q) = nil, want error", p)
+		}
+	}
+	for _, k := range []string{"", "a/b", "..", "A B"} {
+		if err := ValidKey(k); err == nil {
+			t.Errorf("ValidKey(%q) = nil, want error", k)
+		}
+	}
+}

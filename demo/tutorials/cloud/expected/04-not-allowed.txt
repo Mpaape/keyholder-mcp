@@ -1,0 +1,7 @@
+# A dynamic path outside KEYHOLDER_DYNAMIC is refused before any read
+
+$ BAO_WRAPPING_TOKEN=<wrapped token> khcall keyholder_run '{"command":"aws","args":["sts","get-caller-identity"],"credentials":["aws:aws/creds/admin"]}'
+error: bao://aws/creds/admin#access_key: dynamic path not allowed: it must be listed in KEYHOLDER_DYNAMIC (aws/creds/admin)
+--- stderr
+<timestamp> audit cmd="aws" refs=[] exit=0 dur=<duration> status=error: bao://aws/creds/admin#access_key: dynamic path not allowed: it must be listed in KEYHOLDER_DYNAMIC (aws/creds/admin)
+exit_code=1

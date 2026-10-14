@@ -70,6 +70,7 @@ Agents need API keys, cloud credentials and tokens to do real work. Pasted into 
 | Model receives secret values | <span class="kh-yes">Never</span> | <span class="kh-no">Yes, documented</span> | <span class="kh-no">Has a read tool</span> | <span class="kh-no">Yes, documented</span> |
 | Value injected at run time | <span class="kh-yes">Yes</span> | <span class="kh-unk">Not documented</span> | <span class="kh-unk">Not documented</span> | <span class="kh-unk">Not documented</span> |
 | Output masked | <span class="kh-yes">Yes</span> | <span class="kh-unk">Not documented</span> | <span class="kh-unk">Not documented</span> | <span class="kh-unk">Not documented</span> |
+| Cloud credentials per run | <span class="kh-yes">AWS, GCP; revoked after the run</span> | <span class="kh-unk">Not documented</span> | <span class="kh-unk">Not documented</span> | <span class="kh-unk">Not documented</span> |
 | Temporary access | <span class="kh-yes">Wrapped token, TTL</span> | <span class="kh-yes">Wrapping, SSH CA, PKI</span> | <span class="kh-unk">Not documented</span> | <span class="kh-unk">Not documented</span> |
 | What the agent can do | Run allowed commands | 39 tools: secrets, SSH, PKI, policies | Vault operations | Mounts, KV, PKI |
 
@@ -118,6 +119,6 @@ bao token create -policy=my-project-read -ttl=8h -explicit-max-ttl=8h -wrap-ttl=
 
 Then add `keyholder-mcp` to [Claude Code, Cursor or Codex](clients.md) with that wrapped token. Every step, explained: [Getting started](getting-started.md). Every behaviour, with real output: [Tutorials](tutorials/index.md).
 
-Version 0.1.0, MIT licensed. [Source, issues and releases on GitHub](https://github.com/Mpaape/keyholder-mcp). Next on the [roadmap](spec.md#11-roadmap): dynamic AWS and GCP credentials, access requests from the agent, SSH.
+Version 0.2.0, MIT licensed. [Source, issues and releases on GitHub](https://github.com/Mpaape/keyholder-mcp). Cloud CLIs get a credential made for each run: [cloud credentials](tutorials/cloud.md). Next on the [roadmap](spec.md#11-roadmap): access requests from the agent, SSH.
 
 </div>

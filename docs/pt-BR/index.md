@@ -70,6 +70,7 @@ Agentes precisam de chaves de API, credenciais de nuvem e tokens para fazer trab
 | O modelo recebe valores | <span class="kh-yes">Nunca</span> | <span class="kh-no">Sim, documentado</span> | <span class="kh-no">Tem tool de leitura</span> | <span class="kh-no">Sim, documentado</span> |
 | Valor injetado na execução | <span class="kh-yes">Sim</span> | <span class="kh-unk">Não documentado</span> | <span class="kh-unk">Não documentado</span> | <span class="kh-unk">Não documentado</span> |
 | Saída mascarada | <span class="kh-yes">Sim</span> | <span class="kh-unk">Não documentado</span> | <span class="kh-unk">Não documentado</span> | <span class="kh-unk">Não documentado</span> |
+| Credencial de nuvem por execução | <span class="kh-yes">AWS, GCP; revogada depois</span> | <span class="kh-unk">Não documentado</span> | <span class="kh-unk">Não documentado</span> | <span class="kh-unk">Não documentado</span> |
 | Acesso temporário | <span class="kh-yes">Token embrulhado, TTL</span> | <span class="kh-yes">Wrapping, CA de SSH, PKI</span> | <span class="kh-unk">Não documentado</span> | <span class="kh-unk">Não documentado</span> |
 | O que o agente faz | Roda comandos permitidos | 39 tools: segredos, SSH, PKI, políticas | Operações do cofre | Mounts, KV, PKI |
 
@@ -118,6 +119,6 @@ bao token create -policy=my-project-read -ttl=8h -explicit-max-ttl=8h -wrap-ttl=
 
 Depois cadastre o `keyholder-mcp` no [Claude Code, Cursor ou Codex](clients.md) com esse token embrulhado. Cada passo explicado: [Começando](getting-started.md). Cada comportamento, com saída real: [Tutoriais](tutorials/index.md).
 
-Versão 0.1.0, licença MIT. [Código, issues e releases no GitHub](https://github.com/Mpaape/keyholder-mcp). Próximos passos no [roteiro](spec.md#11-roteiro): credenciais dinâmicas de AWS e GCP, pedidos de acesso pelo agente, SSH.
+Versão 0.2.0, licença MIT. [Código, issues e releases no GitHub](https://github.com/Mpaape/keyholder-mcp). CLIs de nuvem recebem uma credencial criada para cada execução: [credenciais de nuvem](tutorials/cloud.md). Próximos passos no [roteiro](spec.md#11-roteiro): pedidos de acesso pelo agente, SSH.
 
 </div>
