@@ -15,6 +15,7 @@ import json
 import os
 import re
 import sys
+import urllib.error
 import urllib.request
 
 API = os.environ.get("GITHUB_API_URL", "https://api.github.com")
@@ -82,13 +83,23 @@ def clean(body):
     return out + "\n" if out else out
 
 
+FAILURES = []
+
+
 def fix(kind, url, body):
+    """Saves the cleaned body. A failed PATCH is recorded, not raised, so a
+    sweep keeps going; main() fails the job at the end."""
     new = clean(body)
-    if new != body:
+    if new == body:
+        return False
+    try:
         api("PATCH", url, {"body": new})
-        print(f"cleaned {kind}: {url}")
-        return True
-    return False
+    except urllib.error.URLError as err:
+        print(f"::error title=Could not clean {kind}::{url}: {err}")
+        FAILURES.append(url)
+        return False
+    print(f"cleaned {kind}: {url}")
+    return True
 
 
 def check_commits(number):
@@ -122,7 +133,7 @@ def main():
             fix("issue/pr", it["url"], it["body"])
         for cm in paged(f"/repos/{REPO}/issues/comments"):
             fix("comment", cm["url"], cm["body"])
-    return 0 if ok else 1
+    return 0 if ok and not FAILURES else 1
 
 
 if __name__ == "__main__":
