@@ -90,6 +90,18 @@ O token embrulhado fica no arquivo de configuração, mas deixa de valer assim q
 - `BAO_*`, `VAULT_*` e `KEYHOLDER_*` são removidas do ambiente do processo filho, então o token do cofre não chega ao comando.
 - Não protege contra um agente hostil que roda com o seu usuário do sistema.
 
+## Revisão de código
+
+Cada pull request é revisado pelo [AurumCode](https://github.com/Mpaape/AurumCode) (`.github/workflows/aurumcode.yml`), com as regras em `.aurumcode/skills/`:
+
+| Skill | Cobre |
+| --- | --- |
+| `seguranca` | Segredo nunca volta ao agente nem vai para log, execução sem shell, lista de comandos, escopo, token só em memória |
+| `review` | Erros, testes, contexto, stdout reservado ao MCP, portabilidade |
+| `solid` | SOLID aplicado aos pacotes Go do projeto |
+
+O check reprova com achado de severidade `error`. Também rodam Semgrep (SAST) e gitleaks (segredos no histórico da PR). Para funcionar, configure em Settings → Secrets and variables → Actions os secrets `LLM_API_KEY` e `LLM_BASE_URL` e, se preciso, as variáveis `LLM_MODEL` e `LLM_PROVIDER` ([provedores](https://github.com/Mpaape/AurumCode/blob/v2.0.0/docs/provedores.md)).
+
 ## Licença
 
-Ainda não definida (decisão aberta no spec).
+[MIT](LICENSE).

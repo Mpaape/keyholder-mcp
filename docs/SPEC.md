@@ -149,7 +149,7 @@ O modo `bao server -dev` serve só para prova de conceito: memória, 127.0.0.1:8
 5. Credencial do GCP: chave JSON de service account ou token OAuth dinâmico.
 6. Escrita da IA no cofre: caminho dedicado ou nenhuma.
 7. Canal local de entrega do token ao MCP, fora do chat. Na prova de conceito: `BAO_WRAPPING_TOKEN` na configuração do cliente MCP, que perde a validade ao ser desembrulhado.
-8. Licença do projeto.
+8. ~~Licença do projeto~~: decidido, MIT.
 9. ~~Linguagem do MCP e do runner~~: decidido, Go (seção 8.1).
 
 ## 12. Plano de entrega

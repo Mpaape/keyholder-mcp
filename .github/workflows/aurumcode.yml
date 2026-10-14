@@ -1,0 +1,84 @@
+name: AurumCode review
+
+# Revisão de cada PR pelo AurumCode, com as regras de .aurumcode/ (lidas da
+# branch base). Mesmos secrets e variáveis do repositório Mpaape/AurumCode.
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+  pull-requests: write
+  statuses: write
+  checks: read
+
+concurrency:
+  group: aurumcode-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review:
+    uses: Mpaape/AurumCode/.github/workflows/review.yml@v2.0.0
+    with:
+      model: ${{ vars.LLM_MODEL }}
+      provider: ${{ vars.LLM_PROVIDER }}
+      # Reserva: tentada só quando o provedor principal falha.
+      fallback_1_provider: ${{ vars.LLM_FALLBACK_1_PROVIDER }}
+      fallback_1_model: ${{ vars.LLM_FALLBACK_1_MODEL }}
+      security: true
+    # Só o que o review usa, nunca secrets: inherit.
+    secrets:
+      LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+      LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+      LLM_FALLBACK_1_API_KEY: ${{ secrets.LLM_FALLBACK_1_API_KEY }}
+      LLM_FALLBACK_1_BASE_URL: ${{ secrets.LLM_FALLBACK_1_BASE_URL }}
+
+  # SARIF na aba Security (Code scanning). PR de fork não recebe a permissão:
+  # o if pula e o SARIF fica só como artefato.
+  upload-sarif:
+    name: SARIF na aba Security
+    needs: review
+    if: ${{ !cancelled() && github.event.pull_request.head.repo.full_name == github.repository }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: aurumcode-sarif-${{ github.event.pull_request.number }}
+          path: .
+      - uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          sarif_file: aurumcode-review.sarif
+          category: aurumcode-policy-gate
+
+  # Falha fechada sem provedor: sem LLM_API_KEY/LLM_BASE_URL (PR de fork ou do
+  # Dependabot, ou secret apagado) o review não roda; este job publica o
+  # motivo no status aurumcode/policy-gate como failure. Nunca publica success.
+  provider:
+    name: LLM provider configured
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail closed without LLM secrets
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [ -n "${LLM_API_KEY:-}" ] && [ -n "${LLM_BASE_URL:-}" ]; then
+            echo "Provedor configurado; o job review publica aurumcode/policy-gate"
+            exit 0
+          fi
+          reason="review não executado: secrets LLM_API_KEY e LLM_BASE_URL ausentes"
+          gh api --method POST "repos/${REPOSITORY}/statuses/${HEAD_SHA}" \
+            -f state=failure -f context=aurumcode/policy-gate \
+            -f description="${reason}" >/dev/null ||
+            echo "::warning::não foi possível publicar o status aurumcode/policy-gate"
+          echo "::error::${reason}"
+          exit 1

@@ -1,0 +1,39 @@
+# Configuração do AurumCode para o Keyholder MCP, no mesmo molde do
+# .aurumcode/config.yml do próprio AurumCode.
+# Referência: https://github.com/Mpaape/AurumCode/blob/v2.0.0/docs/configuration.md
+# Regras do projeto: .aurumcode/skills/<nome>/SKILL.md; cada "## " vira regra
+# citável <nome>#<slug>, e "severity: error" nela reprova pelo gate.
+review:
+  language: pt-BR
+  publication: review     # revisão formal do GitHub
+  inline_comments: true   # achado bloqueante e sugestão aplicável na própria linha
+
+gate:
+  fail_on: [error]        # achado error (modelo, skill ou scanner) reprova
+  inconclusive: block     # revisão que não concluiu nunca aprova
+
+quality_gates:
+  scanners:
+    - engine: gitleaks    # segredos no intervalo de commits da PR
+      required: true
+    - engine: semgrep     # SAST: só reprova pelo que a PR adicionou
+    # go vet fica desligado até o go.sum estar no repositório: sem ele o
+    # download dos módulos falha e o gate fica inconclusivo.
+    # - engine: govet
+    #   fail_on: warning
+
+deliberation:
+  enabled: true           # o modelo pode ler arquivos do repo, dentro de limites
+  max_rounds: 3
+  max_cost_tokens: 60000
+  per_tool_timeout_seconds: 120
+
+# Falsos positivos revisados. Cada exceção cobre só a regra e o arquivo exatos
+# e vence sozinha na data. Os segredos reais continuam cobertos pelo gitleaks.
+exceptions:
+  - repo: Mpaape/keyholder-mcp
+    rule: analysis/hardcoded-secret
+    path: internal/bao/bao.go
+    owner: Mpaape
+    reason: EnvWrappingToken e EnvToken guardam nomes de variáveis de ambiente (BAO_WRAPPING_TOKEN, BAO_TOKEN), não segredos
+    expires: 2027-04-13
