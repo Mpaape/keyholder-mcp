@@ -34,7 +34,7 @@ setup() {
   moto_server -p 15000 >"$WORK/moto.log" 2>&1 &
   PIDS+=($!)
   for _ in $(seq 1 50); do curl -s -o /dev/null "$MOTO/" && break; sleep 0.2; done
-  admin kv put -mount=secret my-project/gcp ACCESS_TOKEN=ya29.fake-not-a-real-token >/dev/null
+  admin kv put -mount=secret my-project/gcp ACCESS_TOKEN=tok-fake-gcp-access-token >/dev/null
   admin policy write my-project-read deploy/policy-project-read.hcl >/dev/null
   admin policy write my-project-cloud deploy/policy-cloud.hcl >/dev/null
 }
