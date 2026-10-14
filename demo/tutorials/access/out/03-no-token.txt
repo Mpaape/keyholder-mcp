@@ -1,0 +1,21 @@
+# Without a token the server starts, explains, and refuses
+
+$ env -u BAO_TOKEN -u BAO_WRAPPING_TOKEN khcall keyholder_status keyholder_list
+### keyholder_status
+{
+  "addr": "",
+  "initialized": false,
+  "kv_mount": "secret",
+  "scope": "my-project",
+  "sealed": false,
+  "server_version": "",
+  "session_error": "no token: set BAO_WRAPPING_TOKEN (preferred) or BAO_TOKEN",
+  "token_policies": null,
+  "token_renewable": false,
+  "token_ttl_seconds": 0
+}
+### keyholder_list
+error: no session with the vault; a human must renew access outside the chat
+--- stderr
+<timestamp> session not opened: no token: set BAO_WRAPPING_TOKEN (preferred) or BAO_TOKEN
+exit_code=1

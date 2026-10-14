@@ -1,0 +1,16 @@
+# LIMIT: an allowed interpreter can encode the value and escape the mask
+
+$ BAO_WRAPPING_TOKEN=<wrapped token> khcall keyholder_run '{"command":"python3","args":["-c","import base64,sys; print(base64.b64encode(sys.argv[1].encode()).decode())","{{vault://my-project/dev/API_TOKEN}}"]}'
+{
+  "exit_code": 0,
+  "refs_used": [
+    "vault://my-project/dev/API_TOKEN"
+  ],
+  "stderr": "",
+  "stdout": "dG9rLWZha2UtMDEyMzQ1Njc4OQ==\n"
+}
+--- stderr
+<timestamp> audit cmd="python3" refs=[vault://my-project/dev/API_TOKEN] exit=0 dur=<duration> status=ok
+exit_code=0
+
+Decoded: tok-fake-0123456789 (the fake token, unmasked)

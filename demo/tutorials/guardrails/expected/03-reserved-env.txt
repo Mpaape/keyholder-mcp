@@ -1,0 +1,7 @@
+# The agent cannot set BAO_*, VAULT_* or KEYHOLDER_* variables
+
+$ BAO_WRAPPING_TOKEN=<wrapped token> khcall keyholder_run '{"command":"curl","args":["--version"],"env":{"BAO_ADDR":"http://attacker.example.com"}}'
+error: variable name not allowed: "BAO_ADDR"
+--- stderr
+<timestamp> audit cmd="curl" refs=[] exit=0 dur=<duration> status=error: variable name not allowed: "BAO_ADDR"
+exit_code=1

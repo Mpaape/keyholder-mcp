@@ -1,0 +1,19 @@
+# Only the project scope is listed and usable, even with a broad policy
+
+$ BAO_WRAPPING_TOKEN=<wrapped token> khcall keyholder_list keyholder_run '{"command":"curl","args":["-sS","-H","X-Pass: {{vault://other-project/prod/DB_PASSWORD}}","http://127.0.0.1:9/"]}'
+### keyholder_list
+{
+  "entries": [
+    {
+      "ref": "vault://my-project/dev/API_TOKEN",
+      "version": 1
+    }
+  ],
+  "note": "Use {{vault://path/KEY}} in the args or env of keyholder_run.",
+  "scope": "my-project"
+}
+### keyholder_run
+error: vault://other-project/prod/DB_PASSWORD: reference outside the project scope (my-project)
+--- stderr
+<timestamp> audit cmd="curl" refs=[] exit=0 dur=<duration> status=error: vault://other-project/prod/DB_PASSWORD: reference outside the project scope (my-project)
+exit_code=1

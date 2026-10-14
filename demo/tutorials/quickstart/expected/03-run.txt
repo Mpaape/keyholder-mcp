@@ -1,0 +1,17 @@
+# The agent calls an API with the token; the value is masked
+
+$ BAO_WRAPPING_TOKEN=<wrapped token> khcall keyholder_run '{"command":"curl","args":["-sS","-H","Authorization: Bearer {{vault://my-project/dev/API_TOKEN}}","{{vault://my-project/dev/API_URL}}"]}'
+{
+  "exit_code": 0,
+  "refs_used": [
+    "vault://my-project/dev/API_TOKEN",
+    "vault://my-project/dev/API_URL"
+  ],
+  "stderr": "",
+  "stdout": "api says: hello, caller with header Authorization: Bearer [hidden:vault://my-project/dev/API_TOKEN]\n"
+}
+--- stderr
+<timestamp> audit cmd="curl" refs=[vault://my-project/dev/API_TOKEN vault://my-project/dev/API_URL] exit=0 dur=<duration> status=ok
+exit_code=0
+
+Did the API receive the stored token? yes

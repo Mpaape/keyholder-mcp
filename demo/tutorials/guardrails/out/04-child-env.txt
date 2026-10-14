@@ -1,0 +1,16 @@
+# The vault token never reaches the child process
+
+The server itself was started with BAO_TOKEN set below; the child must not see it.
+
+$ BAO_TOKEN=<root token> BAO_WRAPPING_TOKEN=<wrapped token> khcall keyholder_run '{"command":"printenv","args":["BAO_TOKEN"]}'
+{
+  "exit_code": 1,
+  "refs_used": [],
+  "stderr": "",
+  "stdout": ""
+}
+--- stderr
+<timestamp> audit cmd="printenv" refs=[] exit=1 dur=<duration> status=ok
+exit_code=0
+
+printenv exits 1 and prints nothing: BAO_TOKEN is not set in the child process.

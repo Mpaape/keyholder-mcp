@@ -1,0 +1,19 @@
+# The human stores a secret and a read policy (outside the chat)
+
+$ bao kv put -mount=secret my-project/dev API_TOKEN=tok-fake-0123456789 API_URL=http://127.0.0.1:18080/health
+======= Secret Path =======
+secret/data/my-project/dev
+
+======= Metadata =======
+Key                Value
+---                -----
+created_time       <time>
+custom_metadata    <nil>
+deletion_time      n/a
+destroyed          false
+version            1
+exit_code=0
+
+$ bao policy write my-project-read deploy/policy-project-read.hcl
+Success! Uploaded policy: my-project-read
+exit_code=0

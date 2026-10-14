@@ -1,0 +1,31 @@
+# A 5-second token: the call works, then the same session is refused
+
+$ BAO_WRAPPING_TOKEN=<wrapped token> khcall keyholder_run '{"command":"curl","args":["-sS","-H","Authorization: Bearer {{vault://my-project/dev/API_TOKEN}}","http://127.0.0.1:18080/"]}' +wait=7s keyholder_status keyholder_run '{"command":"curl","args":["-sS","-H","Authorization: Bearer {{vault://my-project/dev/API_TOKEN}}","http://127.0.0.1:18080/"]}'
+### keyholder_run
+{
+  "exit_code": 0,
+  "refs_used": [
+    "vault://my-project/dev/API_TOKEN"
+  ],
+  "stderr": "",
+  "stdout": "api says: hello, caller with header Authorization: Bearer [hidden:vault://my-project/dev/API_TOKEN]\n"
+}
+### keyholder_status
+{
+  "addr": "http://127.0.0.1:18200",
+  "initialized": true,
+  "kv_mount": "secret",
+  "scope": "my-project",
+  "sealed": false,
+  "server_version": "2.7.1",
+  "session_error": "token expired; renew access outside the chat",
+  "token_policies": null,
+  "token_renewable": false,
+  "token_ttl_seconds": 0
+}
+### keyholder_run
+error: vault://my-project/dev/API_TOKEN: read my-project/dev: access denied by the vault: token expired or revoked, or the policy does not allow this path; renew access outside the chat
+--- stderr
+<timestamp> audit cmd="curl" refs=[vault://my-project/dev/API_TOKEN] exit=0 dur=<duration> status=ok
+<timestamp> audit cmd="curl" refs=[] exit=0 dur=<duration> status=error: vault://my-project/dev/API_TOKEN: read my-project/dev: access denied by the vault: token expired or revoked, or the policy does not allow this path; renew access outside the chat
+exit_code=1

@@ -1,0 +1,41 @@
+# The agent sees the tools, the session and the reference names
+
+$ BAO_WRAPPING_TOKEN=<wrapped token> khcall -tools
+keyholder_list
+keyholder_run
+keyholder_status
+exit_code=0
+
+$ BAO_WRAPPING_TOKEN=<wrapped token> khcall keyholder_status keyholder_list
+### keyholder_status
+{
+  "addr": "http://127.0.0.1:18200",
+  "initialized": true,
+  "kv_mount": "secret",
+  "scope": "my-project",
+  "sealed": false,
+  "server_version": "2.7.1",
+  "token_expire_time": "<time>",
+  "token_policies": [
+    "default",
+    "my-project-read"
+  ],
+  "token_renewable": true,
+  "token_ttl_seconds": <ttl>
+}
+### keyholder_list
+{
+  "entries": [
+    {
+      "ref": "vault://my-project/dev/API_TOKEN",
+      "version": 1
+    },
+    {
+      "ref": "vault://my-project/dev/API_URL",
+      "version": 1
+    }
+  ],
+  "note": "Use {{vault://path/KEY}} in the args or env of keyholder_run.",
+  "scope": "my-project"
+}
+exit_code=0

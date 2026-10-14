@@ -1,0 +1,14 @@
+# Commands outside the list, with a path or with a placeholder are refused
+
+$ BAO_WRAPPING_TOKEN=<wrapped token> khcall keyholder_run '{"command":"sh","args":["-c","echo hi"]}' keyholder_run '{"command":"/usr/bin/curl","args":["--version"]}' keyholder_run '{"command":"{{vault://my-project/dev/API_TOKEN}}"}'
+### keyholder_run
+error: command not in the allow list: "sh" (allowed: curl, printenv)
+### keyholder_run
+error: command not in the allow list: give only the command name
+### keyholder_run
+error: command not in the allow list: give only the command name
+--- stderr
+<timestamp> audit cmd="sh" refs=[] exit=0 dur=<duration> status=error: command not in the allow list: "sh" (allowed: curl, printenv)
+<timestamp> audit cmd="/usr/bin/curl" refs=[] exit=0 dur=<duration> status=error: command not in the allow list: give only the command name
+<timestamp> audit cmd="{{vault://my-project/dev/API_TOKEN}}" refs=[] exit=0 dur=<duration> status=error: command not in the allow list: give only the command name
+exit_code=1

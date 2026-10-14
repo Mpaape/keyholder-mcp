@@ -1,0 +1,18 @@
+# The API reflects the header back: the agent sees the reference, not the value
+
+$ BAO_WRAPPING_TOKEN=<wrapped token> khcall keyholder_run '{"command":"curl","args":["-sS","-H","Authorization: Bearer {{vault://my-project/dev/API_TOKEN}}","http://127.0.0.1:18080/"]}'
+{
+  "exit_code": 0,
+  "refs_used": [
+    "vault://my-project/dev/API_TOKEN"
+  ],
+  "stderr": "",
+  "stdout": "api says: hello, caller with header Authorization: Bearer [hidden:vault://my-project/dev/API_TOKEN]\n"
+}
+--- stderr
+<timestamp> audit cmd="curl" refs=[vault://my-project/dev/API_TOKEN] exit=0 dur=<duration> status=ok
+exit_code=0
+
+Did the API receive the stored token? yes
+
+stderr is masked the same way (covered by internal/runner tests).

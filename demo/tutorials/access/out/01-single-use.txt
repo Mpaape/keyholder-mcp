@@ -1,0 +1,36 @@
+# A wrapped token opens one session; reusing it fails
+
+$ BAO_WRAPPING_TOKEN=<wrapped token> khcall keyholder_status
+{
+  "addr": "http://127.0.0.1:18200",
+  "initialized": true,
+  "kv_mount": "secret",
+  "scope": "my-project",
+  "sealed": false,
+  "server_version": "2.7.1",
+  "token_expire_time": "<time>",
+  "token_policies": [
+    "default",
+    "my-project-read"
+  ],
+  "token_renewable": true,
+  "token_ttl_seconds": <ttl>
+}
+exit_code=0
+
+$ BAO_WRAPPING_TOKEN=<same wrapped token> khcall keyholder_status
+{
+  "addr": "",
+  "initialized": false,
+  "kv_mount": "secret",
+  "scope": "my-project",
+  "sealed": false,
+  "server_version": "",
+  "session_error": "unwrap token: vault returned HTTP 400 (already used or expired?)",
+  "token_policies": null,
+  "token_renewable": false,
+  "token_ttl_seconds": 0
+}
+--- stderr
+<timestamp> session not opened: unwrap token: vault returned HTTP 400 (already used or expired?)
+exit_code=0
