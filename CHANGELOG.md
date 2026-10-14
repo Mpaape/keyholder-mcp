@@ -9,7 +9,6 @@
 - `khcall`, a minimal MCP client for debugging and for the tutorials.
 - `README.pt-BR.md`, `CONTRIBUTING.md`.
 - `.mcp.json` with the AurumCode gate (`aurumcode mcp`) for Claude Code.
-- `Review failure reason` job: copies the AurumCode error lines of a failed review into a PR annotation.
 - CI with `gofmt`, `go vet`, `go test` and `go build` on Linux, Windows and macOS.
 - MCP server in Go with `keyholder_status`, `keyholder_list` and `keyholder_run`.
 - Runner with `{{vault://...}}` placeholders resolved only at execution time, without a shell, with masked output and time and output limits.
@@ -25,3 +24,9 @@
 - Tools renamed: `keyholder_listar` → `keyholder_list`, `keyholder_executar` → `keyholder_run`.
 - Masked values now read `[hidden:<ref>]`.
 - AurumCode skill `seguranca` renamed to `security`; policy file renamed to `policy-project-read.hcl`.
+- Review rule headings carry only the id (`security#sec-001`), so the rule catalog fits AurumCode's 512-token budget ([Mpaape/AurumCode#179](https://github.com/Mpaape/AurumCode/issues/179)).
+
+### Fixed
+
+- The AurumCode review was canceled by a concurrency deadlock with the reusable workflow's own group.
+- The SARIF upload is skipped, instead of failing, when the review wrote no SARIF.

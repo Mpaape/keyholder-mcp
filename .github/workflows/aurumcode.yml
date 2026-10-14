@@ -72,35 +72,6 @@ jobs:
           sarif_file: aurumcode-review.sarif
           category: aurumcode-policy-gate
 
-  # When the review job fails, copy the AurumCode lines of its log into an
-  # annotation, so the reason shows on the PR without opening the raw log.
-  failure-reason:
-    name: Review failure reason
-    needs: review
-    if: ${{ failure() && needs.review.result == 'failure' }}
-    runs-on: ubuntu-latest
-    permissions:
-      actions: read
-    steps:
-      - name: Surface the review error
-        env:
-          GH_TOKEN: ${{ github.token }}
-          REPOSITORY: ${{ github.repository }}
-          RUN_ID: ${{ github.run_id }}
-        run: |
-          set -uo pipefail
-          job="$(gh api "repos/${REPOSITORY}/actions/runs/${RUN_ID}/jobs" \
-            --jq '.jobs[] | select(.name | endswith("Review pull request")) | .id' | head -n1)"
-          # The log of a finished job can take a few seconds to be served.
-          for _ in 1 2 3 4 5 6; do
-            gh api "repos/${REPOSITORY}/actions/jobs/${job}/logs" > review.log 2>/dev/null && break
-            sleep 10
-          done
-          lines="$(grep -E 'aurumcode review:|panic:' review.log 2>/dev/null | cut -d' ' -f2- | tail -n 40)"
-          [ -n "$lines" ] || lines="could not read the review log; open the job 'review / Review pull request'"
-          msg="$(printf '%s' "$lines" | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')"
-          echo "::error title=AurumCode review failed::${msg}"
-
   # Fails closed without a provider: without LLM_API_KEY/LLM_BASE_URL (fork or
   # Dependabot PR, or a deleted secret) the review does not run; this job
   # posts the reason on aurumcode/policy-gate as failure. Never posts success.
