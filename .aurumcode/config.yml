@@ -5,7 +5,7 @@
 # citable as <name>#<slug>, and "severity: error" in it fails the gate.
 review:
   language: en-US
-  publication: review     # formal GitHub review
+  publication: comments   # report as a PR comment; never approves. The verdict is the aurumcode/policy-gate status
   inline_comments: true   # blocking findings and one-click suggestions on the line
 
 gate:

@@ -1,5 +1,10 @@
 name: CI
 
+# One pipeline: tests and tutorials first; on a pull request, the AurumCode
+# gate runs only after both pass. Its verdict is the aurumcode/policy-gate
+# status, required on main; AurumCode never approves a pull request
+# (.aurumcode/config.yml, publication: comments).
+
 on:
   push:
     branches: [main, dev]
@@ -7,6 +12,12 @@ on:
 
 permissions:
   contents: read
+
+concurrency:
+  # Must differ from the reusable review job's own group
+  # (aurumcode-review-<pr>), or GitHub cancels both as a deadlock.
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   test:
@@ -91,3 +102,99 @@ jobs:
             bash "demo/tutorials/$t/run.sh" --check
             echo "::endgroup::"
           done
+
+  # Fails closed without a provider: without LLM_API_KEY/LLM_BASE_URL (fork or
+  # Dependabot PR, or a deleted secret) the gate cannot run; this job posts the
+  # reason on aurumcode/policy-gate as failure. Never posts success.
+  provider:
+    name: LLM provider configured
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      statuses: write
+    steps:
+      - name: Fail closed without LLM secrets
+        env:
+          LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+          LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          set -euo pipefail
+          if [ -n "${LLM_API_KEY:-}" ] && [ -n "${LLM_BASE_URL:-}" ]; then
+            echo "Provider configured; the aurumcode job posts aurumcode/policy-gate"
+            exit 0
+          fi
+          reason="gate not run: secrets LLM_API_KEY and LLM_BASE_URL are missing"
+          gh api --method POST "repos/${REPOSITORY}/statuses/${HEAD_SHA}" \
+            -f state=failure -f context=aurumcode/policy-gate \
+            -f description="${reason}" >/dev/null ||
+            echo "::warning::could not post the aurumcode/policy-gate status"
+          echo "::error::${reason}"
+          exit 1
+
+  # The AurumCode gate: project rules (.aurumcode/, read from the base
+  # branch), the deterministic security pass, gitleaks, Semgrep and go vet.
+  aurumcode:
+    name: AurumCode gate
+    needs: [test, tutorials, provider]
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      pull-requests: write
+      statuses: write
+      checks: read
+    uses: Mpaape/AurumCode/.github/workflows/review.yml@v2.0.0
+    with:
+      model: ${{ vars.LLM_MODEL }}
+      provider: ${{ vars.LLM_PROVIDER }}
+      # Fallback: tried only when the primary provider fails.
+      fallback_1_provider: ${{ vars.LLM_FALLBACK_1_PROVIDER }}
+      fallback_1_model: ${{ vars.LLM_FALLBACK_1_MODEL }}
+      security: true
+      # Report as a comment, never a formal review: the gate never approves.
+      # Set here so it holds whatever the base branch's config says.
+      publication: comments
+    # Only what the gate uses, never secrets: inherit.
+    secrets:
+      LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
+      LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
+      LLM_FALLBACK_1_API_KEY: ${{ secrets.LLM_FALLBACK_1_API_KEY }}
+      LLM_FALLBACK_1_BASE_URL: ${{ secrets.LLM_FALLBACK_1_BASE_URL }}
+
+  # SARIF to the Security tab (code scanning). Fork PRs do not get the
+  # permission: the if skips this and the SARIF stays an artifact.
+  upload-sarif:
+    name: SARIF to the Security tab
+    needs: aurumcode
+    if: ${{ !cancelled() && github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository && needs.aurumcode.result != 'skipped' }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      actions: read
+      security-events: write
+    steps:
+      # A gate that stops before writing its SARIF (for example on a
+      # configuration error) uploads no artifact: skip instead of failing.
+      - name: Check the SARIF artifact exists
+        id: sarif
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          NAME: aurumcode-sarif-${{ github.event.pull_request.number }}
+        run: |
+          n="$(gh api "repos/${REPOSITORY}/actions/runs/${RUN_ID}/artifacts" --jq "[.artifacts[] | select(.name == \"${NAME}\")] | length")"
+          if [ "${n}" -gt 0 ]; then echo "found=true" >> "$GITHUB_OUTPUT"; else
+            echo "::notice::the gate wrote no SARIF; nothing to upload"; echo "found=false" >> "$GITHUB_OUTPUT"; fi
+      - if: steps.sarif.outputs.found == 'true'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          name: aurumcode-sarif-${{ github.event.pull_request.number }}
+          path: .
+      - if: steps.sarif.outputs.found == 'true'
+        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+        with:
+          sarif_file: aurumcode-review.sarif
+          category: aurumcode-policy-gate

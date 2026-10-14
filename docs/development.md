@@ -66,8 +66,7 @@ Tutorial pages include the files in `demo/tutorials/*/expected/` at build time, 
 
 | Workflow | Runs |
 | --- | --- |
-| `ci.yml` | `gofmt`, `go vet`, `go test`, `go build` on Linux, Windows and macOS; every tutorial and its `--check` on Linux |
-| `aurumcode.yml` | AI code review with the project rules, gitleaks and Semgrep |
+| `ci.yml` | The pipeline: `gofmt`, `go vet`, `go test`, `go build` on Linux, Windows and macOS; every tutorial and its `--check` on Linux; then, on a pull request, the AurumCode gate (project rules, gitleaks, Semgrep), which never approves |
 | `release.yml` | When `main` gets a CHANGELOG version with no release yet (or on a `v*` tag): tests, builds the binaries for six platforms, publishes them with `SHA256SUMS` and the CHANGELOG section |
 | `docs.yml` | Builds the site with `--strict` on every PR; publishes it to GitHub Pages from `main` |
 | `attribution.yml` | The maintainer's own: strips AI attribution from the maintainer's pull requests, issues and comments. Contributors are not affected |
