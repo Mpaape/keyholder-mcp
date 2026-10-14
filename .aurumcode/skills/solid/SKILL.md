@@ -3,20 +3,20 @@ name: solid
 version: 1
 paths: ["cmd/**", "internal/**"]
 ---
-Princípios SOLID aplicados ao Go deste projeto. Em Go, "classe" vira pacote e tipo, e "herança" vira composição e interface.
+SOLID principles applied to this project's Go code. In Go, "class" becomes package and type, and "inheritance" becomes composition and interfaces.
 
-## SOLID-S Responsabilidade única por pacote
-Cada pacote tem uma razão para mudar: `ref` interpreta referências, `mask` oculta valores, `runner` executa, `bao` fala com o OpenBao, `cmd/keyholder-mcp` liga tudo ao MCP. Lógica de cofre no runner, ou de execução no pacote `bao`, é achado. Funções com mais de uma responsabilidade clara devem ser divididas.
+## SOLID-S One responsibility per package
+Each package has one reason to change: `ref` parses references, `mask` hides values, `runner` executes, `bao` talks to OpenBao, `cmd/keyholder-mcp` wires everything to MCP. Vault logic in the runner, or execution logic in `bao`, is a finding. Functions with more than one clear responsibility should be split.
 
-## SOLID-O Aberto para extensão, fechado para modificação
-Novos backends de segredo ou adaptadores (AWS, GCP, SSH) entram como novas implementações de `runner.Resolver` ou de um novo pacote, sem alterar o fluxo central de `Runner.Run`. Um `switch` por tipo de backend dentro do runner é achado.
+## SOLID-O Open for extension, closed for modification
+New secret backends or adapters (AWS, GCP, SSH) come in as new `runner.Resolver` implementations or a new package, without changing the core flow of `Runner.Run`. A `switch` on backend type inside the runner is a finding.
 
-## SOLID-L Substituição sem surpresa
-Toda implementação de `runner.Resolver` respeita o mesmo contrato: devolve o valor ou um erro sem o valor, honra o `context.Context` e não tem efeito colateral visível ao agente. Um fake de teste e o `bao.Store` precisam ser intercambiáveis.
+## SOLID-L Substitution without surprise
+Every `runner.Resolver` honors the same contract: it returns the value or an error without the value, honors the `context.Context`, and has no side effect the agent can see. A test fake and `bao.Store` must be interchangeable.
 
-## SOLID-I Interfaces pequenas, definidas por quem consome
-Interfaces e tipos de função são declarados no pacote que os usa (como `runner.Resolver`), com o menor conjunto de métodos necessário. Não criar interfaces "por precaução" nem exportar interfaces grandes do pacote produtor.
+## SOLID-I Small interfaces, defined by the consumer
+Interfaces and function types are declared in the package that uses them (like `runner.Resolver`), with the smallest set of methods needed. No interfaces "just in case" and no large interfaces exported by the producer.
 
-## SOLID-D Dependência de abstrações
+## SOLID-D Depend on abstractions
 severity: error
-`internal/runner`, `internal/ref` e `internal/mask` não importam `internal/bao`, o SDK do OpenBao nem o SDK do MCP. As dependências concretas são ligadas só em `cmd/keyholder-mcp`. Um import que inverta essa direção é bloqueante.
+`internal/runner`, `internal/ref` and `internal/mask` do not import `internal/bao`, the OpenBao SDK or the MCP SDK. Concrete dependencies are wired only in `cmd/`. An import that inverts this direction blocks the merge.

@@ -1,39 +1,39 @@
-# Configuração do AurumCode para o Keyholder MCP, no mesmo molde do
-# .aurumcode/config.yml do próprio AurumCode.
-# Referência: https://github.com/Mpaape/AurumCode/blob/v2.0.0/docs/configuration.md
-# Regras do projeto: .aurumcode/skills/<nome>/SKILL.md; cada "## " vira regra
-# citável <nome>#<slug>, e "severity: error" nela reprova pelo gate.
+# AurumCode configuration for Keyholder MCP, in the same shape as AurumCode's
+# own .aurumcode/config.yml.
+# Reference: https://github.com/Mpaape/AurumCode/blob/v2.0.0/docs/configuration.md
+# Project rules: .aurumcode/skills/<name>/SKILL.md; each "## " becomes a rule
+# citable as <name>#<slug>, and "severity: error" in it fails the gate.
 review:
-  language: pt-BR
-  publication: review     # revisão formal do GitHub
-  inline_comments: true   # achado bloqueante e sugestão aplicável na própria linha
+  language: en-US
+  publication: review     # formal GitHub review
+  inline_comments: true   # blocking findings and one-click suggestions on the line
 
 gate:
-  fail_on: [error]        # achado error (modelo, skill ou scanner) reprova
-  inconclusive: block     # revisão que não concluiu nunca aprova
+  fail_on: [error]        # an error finding (model, skill or scanner) fails
+  inconclusive: block     # a review that did not finish never passes
 
 quality_gates:
   scanners:
-    - engine: gitleaks    # segredos no intervalo de commits da PR
+    - engine: gitleaks    # secrets anywhere in the PR's commits
       required: true
-    - engine: semgrep     # SAST: só reprova pelo que a PR adicionou
-    # go vet fica desligado até o go.sum estar no repositório: sem ele o
-    # download dos módulos falha e o gate fica inconclusivo.
+    - engine: semgrep     # SAST: fails only on lines the PR added
+    # go vet stays off until go.sum is in the repository: without it the
+    # module download fails and the gate is inconclusive.
     # - engine: govet
     #   fail_on: warning
 
 deliberation:
-  enabled: true           # o modelo pode ler arquivos do repo, dentro de limites
+  enabled: true           # the model may read repository files, within limits
   max_rounds: 3
   max_cost_tokens: 60000
   per_tool_timeout_seconds: 120
 
-# Falsos positivos revisados. Cada exceção cobre só a regra e o arquivo exatos
-# e vence sozinha na data. Os segredos reais continuam cobertos pelo gitleaks.
+# Reviewed false positives. Each exception covers only the exact rule and file
+# and expires on its own. Real secrets are still covered by gitleaks.
 exceptions:
   - repo: Mpaape/keyholder-mcp
     rule: analysis/hardcoded-secret
     path: internal/bao/bao.go
     owner: Mpaape
-    reason: EnvWrappingToken e EnvToken guardam nomes de variáveis de ambiente (BAO_WRAPPING_TOKEN, BAO_TOKEN), não segredos
+    reason: EnvWrappingToken and EnvToken hold environment variable names (BAO_WRAPPING_TOKEN, BAO_TOKEN), not secrets
     expires: 2027-04-13

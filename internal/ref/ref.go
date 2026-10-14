@@ -1,11 +1,11 @@
-// Package ref interpreta referências vault:// e placeholders {{vault://...}}.
+// Package ref parses vault:// references and {{vault://...}} placeholders.
 //
-// Uma referência aponta para um campo de um segredo no KV:
+// A reference points at one field of a secret in the KV:
 //
-//	vault://meu-projeto/dev/API_TOKEN
-//	        └──── Path ────┘ └─ Key ─┘
+//	vault://my-project/dev/API_TOKEN
+//	        └──── Path ───┘ └─ Key ─┘
 //
-// Path é o caminho do segredo dentro do mount do KV e Key é o campo dentro dele.
+// Path is the secret's path inside the KV mount and Key is the field in it.
 package ref
 
 import (
@@ -15,43 +15,43 @@ import (
 	"strings"
 )
 
-// Scheme é o prefixo de toda referência.
+// Scheme prefixes every reference.
 const Scheme = "vault://"
 
-// Ref identifica um campo de um segredo.
+// Ref identifies one field of a secret.
 type Ref struct {
-	Path string // caminho do segredo, por exemplo "meu-projeto/dev"
-	Key  string // campo dentro do segredo, por exemplo "API_TOKEN"
+	Path string // secret path, for example "my-project/dev"
+	Key  string // field inside the secret, for example "API_TOKEN"
 }
 
-// String devolve a forma canônica vault://path/key.
+// String returns the canonical form vault://path/key.
 func (r Ref) String() string { return Scheme + r.Path + "/" + r.Key }
 
 var segmentRe = regexp.MustCompile(`^[A-Za-z0-9_.-]+$`)
 
-// ErrInvalid indica uma referência malformada.
-var ErrInvalid = errors.New("referência inválida")
+// ErrInvalid reports a malformed reference.
+var ErrInvalid = errors.New("invalid reference")
 
-// Parse interpreta "vault://a/b/KEY". Exige ao menos um segmento de caminho e
-// a chave, e recusa segmentos vazios, "." e "..".
+// Parse parses "vault://a/b/KEY". It requires at least one path segment and
+// the key, and rejects empty segments, "." and "..".
 func Parse(s string) (Ref, error) {
 	if !strings.HasPrefix(s, Scheme) {
-		return Ref{}, fmt.Errorf("%w: %q não começa com %s", ErrInvalid, s, Scheme)
+		return Ref{}, fmt.Errorf("%w: %q does not start with %s", ErrInvalid, s, Scheme)
 	}
 	parts := strings.Split(strings.TrimPrefix(s, Scheme), "/")
 	if len(parts) < 2 {
-		return Ref{}, fmt.Errorf("%w: %q precisa de caminho e chave", ErrInvalid, s)
+		return Ref{}, fmt.Errorf("%w: %q needs a path and a key", ErrInvalid, s)
 	}
 	for _, p := range parts {
 		if p == "." || p == ".." || !segmentRe.MatchString(p) {
-			return Ref{}, fmt.Errorf("%w: segmento %q em %q", ErrInvalid, p, s)
+			return Ref{}, fmt.Errorf("%w: segment %q in %q", ErrInvalid, p, s)
 		}
 	}
 	return Ref{Path: strings.Join(parts[:len(parts)-1], "/"), Key: parts[len(parts)-1]}, nil
 }
 
-// InScope informa se a referência fica dentro do escopo (prefixo de caminho).
-// Escopo vazio aceita tudo.
+// InScope reports whether the reference is inside the scope (a path
+// prefix). An empty scope accepts everything.
 func (r Ref) InScope(scope string) bool {
 	scope = strings.Trim(scope, "/")
 	if scope == "" {
@@ -62,14 +62,14 @@ func (r Ref) InScope(scope string) bool {
 
 var placeholderRe = regexp.MustCompile(`\{\{\s*(vault://[^{}\s]+)\s*\}\}`)
 
-// HasPlaceholder informa se o texto contém algum {{vault://...}}.
+// HasPlaceholder reports whether the text contains any {{vault://...}}.
 func HasPlaceholder(s string) bool { return placeholderRe.MatchString(s) }
 
-// Resolver devolve o valor de uma referência.
+// Resolver returns the value of a reference.
 type Resolver func(Ref) (string, error)
 
-// Expand troca cada {{vault://...}} pelo valor resolvido. Devolve o texto
-// expandido e as referências usadas, na ordem em que aparecem.
+// Expand replaces each {{vault://...}} with its resolved value. It returns
+// the expanded text and the references used, in order of appearance.
 func Expand(s string, resolve Resolver) (string, []Ref, error) {
 	var (
 		used     []Ref

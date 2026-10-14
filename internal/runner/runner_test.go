@@ -13,22 +13,22 @@ import (
 	"keyholder-mcp/internal/ref"
 )
 
-// O próprio binário de teste faz o papel do comando executado, o que funciona
-// igual em Linux, macOS e Windows. Ver TestMain.
+// The test binary itself plays the command being run, which works the same on
+// Linux, macOS and Windows. See TestMain.
 const helperEnv = "KH_TEST_HELPER"
 
-// helperDir guarda uma CÓPIA do binário de teste com o nome kh-helper. Não é um
-// hard link: no Windows um executável em uso não pode ser apagado, e o link
-// aponta para o binário que está rodando, então a limpeza do diretório falharia.
+// helperDir holds a COPY of the test binary named kh-helper. Not a hard link:
+// on Windows a running executable cannot be deleted, and a link would point at
+// the running test binary, so cleaning up the directory would fail.
 var helperDir string
 
 func TestMain(m *testing.M) {
 	if mode := os.Getenv(helperEnv); mode != "" {
 		switch mode {
-		case "echo": // imprime os argumentos e a variável API_KEY
+		case "echo": // prints the arguments and the API_KEY variable
 			fmt.Println(strings.Join(os.Args[1:], " "))
 			fmt.Fprintln(os.Stderr, "API_KEY="+os.Getenv("API_KEY"))
-		case "env": // imprime nomes das variáveis herdadas
+		case "env": // prints the names of inherited variables
 			for _, kv := range os.Environ() {
 				name, _, _ := strings.Cut(kv, "=")
 				fmt.Println(name)
@@ -42,16 +42,16 @@ func TestMain(m *testing.M) {
 	}
 	dir, err := prepareHelper()
 	if err != nil {
-		fmt.Fprintln(os.Stderr, "preparar kh-helper:", err)
+		fmt.Fprintln(os.Stderr, "prepare kh-helper:", err)
 		os.Exit(1)
 	}
 	helperDir = dir
 	code := m.Run()
-	_ = os.RemoveAll(dir) // melhor esforço: antivírus pode segurar o arquivo por um instante
+	_ = os.RemoveAll(dir) // best effort: antivirus may hold the file for a moment
 	os.Exit(code)
 }
 
-// prepareHelper copia o binário de teste para um diretório temporário.
+// prepareHelper copies the test binary into a temporary directory.
 func prepareHelper() (string, error) {
 	exe, err := os.Executable()
 	if err != nil {
@@ -86,9 +86,9 @@ func helper(t *testing.T, mode string, extraEnv ...string) *Runner {
 	dir := helperDir
 	t.Setenv("PATH", dir+string(os.PathListSeparator)+os.Getenv("PATH"))
 	secrets := map[string]string{
-		"vault://proj/dev/TOKEN": "tok-SUPER-secreto",
+		"vault://proj/dev/TOKEN": "tok-SUPER-secret",
 		"vault://proj/dev/KEY":   "key-123456",
-		"vault://outro/dev/X":    "fora-do-escopo",
+		"vault://other/dev/X":    "out-of-scope",
 	}
 	return &Runner{
 		Allow: map[string]bool{"kh-helper": true},
@@ -96,7 +96,7 @@ func helper(t *testing.T, mode string, extraEnv ...string) *Runner {
 		Resolve: func(_ context.Context, r ref.Ref) (string, error) {
 			v, ok := secrets[r.String()]
 			if !ok {
-				return "", errors.New("não encontrado")
+				return "", errors.New("not found")
 			}
 			return v, nil
 		},
@@ -114,13 +114,13 @@ func TestRunInjectsAndMasks(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if strings.Contains(res.Stdout+res.Stderr, "SUPER-secreto") || strings.Contains(res.Stdout+res.Stderr, "key-123456") {
-		t.Fatalf("valor vazou: stdout=%q stderr=%q", res.Stdout, res.Stderr)
+	if strings.Contains(res.Stdout+res.Stderr, "SUPER-secret") || strings.Contains(res.Stdout+res.Stderr, "key-123456") {
+		t.Fatalf("value leaked: stdout=%q stderr=%q", res.Stdout, res.Stderr)
 	}
-	if !strings.Contains(res.Stdout, "Bearer [oculto:vault://proj/dev/TOKEN] literal") {
+	if !strings.Contains(res.Stdout, "Bearer [hidden:vault://proj/dev/TOKEN] literal") {
 		t.Fatalf("stdout = %q", res.Stdout)
 	}
-	if !strings.Contains(res.Stderr, "API_KEY=[oculto:vault://proj/dev/KEY]") {
+	if !strings.Contains(res.Stderr, "API_KEY=[hidden:vault://proj/dev/KEY]") {
 		t.Fatalf("stderr = %q", res.Stderr)
 	}
 	if strings.Join(res.RefsUsed, ",") != "vault://proj/dev/TOKEN,vault://proj/dev/KEY" {
@@ -139,28 +139,28 @@ func TestRunRejectsNotAllowed(t *testing.T) {
 
 func TestRunRejectsOutOfScope(t *testing.T) {
 	r := helper(t, "echo")
-	_, err := r.Run(context.Background(), Request{Command: "kh-helper", Args: []string{"{{vault://outro/dev/X}}"}})
+	_, err := r.Run(context.Background(), Request{Command: "kh-helper", Args: []string{"{{vault://other/dev/X}}"}})
 	if !errors.Is(err, ErrOutOfScope) {
 		t.Fatalf("err = %v, want ErrOutOfScope", err)
 	}
 }
 
 func TestRunStripsVaultEnv(t *testing.T) {
-	r := helper(t, "env", "BAO_TOKEN=s.nao-pode-vazar", "VAULT_TOKEN=x", "KEYHOLDER_SCOPE=proj", "HOME_OK=1")
+	r := helper(t, "env", "BAO_TOKEN=s.must-not-leak", "VAULT_TOKEN=x", "KEYHOLDER_SCOPE=proj", "HOME_OK=1")
 	res, err := r.Run(context.Background(), Request{Command: "kh-helper"})
 	if err != nil {
 		t.Fatal(err)
 	}
 	for _, bad := range []string{"BAO_TOKEN", "VAULT_TOKEN", "KEYHOLDER_SCOPE"} {
 		if strings.Contains(res.Stdout, bad) {
-			t.Errorf("%s chegou ao processo filho", bad)
+			t.Errorf("%s reached the child process", bad)
 		}
 	}
 	if !strings.Contains(res.Stdout, "HOME_OK") {
-		t.Errorf("variável comum foi removida: %q", res.Stdout)
+		t.Errorf("a regular variable was removed: %q", res.Stdout)
 	}
 	if _, err := r.Run(context.Background(), Request{Command: "kh-helper", Env: map[string]string{"BAO_TOKEN": "x"}}); err == nil {
-		t.Error("esperava recusa de BAO_TOKEN em env")
+		t.Error("expected BAO_TOKEN in env to be refused")
 	}
 }
 

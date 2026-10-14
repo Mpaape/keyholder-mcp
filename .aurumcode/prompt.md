@@ -1,23 +1,23 @@
-O Keyholder MCP deixa agentes de IA usarem credenciais do OpenBao sem ver os valores.
-O agente só conhece referências `vault://caminho/CHAVE`; o valor é resolvido no runner,
-na hora de executar um comando permitido, e a saída volta mascarada.
+Keyholder MCP lets AI agents use credentials stored in OpenBao without seeing their values.
+The agent only knows `vault://path/KEY` references; the value is resolved in the runner,
+when an allowed command runs, and the output comes back masked.
 
-Ao revisar, a pergunta principal é: esta mudança pode fazer um valor de segredo, o token
-do cofre ou o token embrulhado chegar ao agente, a um log, a um erro, a um arquivo ou a um
-processo que não deveria recebê-lo? Siga o caminho do dado desde `bao.Store.Resolve` até
-a resposta MCP antes de concluir.
+When reviewing, the main question is: can this change let a secret value, the vault token or
+the wrapped token reach the agent, a log, an error, a file or a process that should not get it?
+Follow the data from `bao.Store.Resolve` to the MCP response before concluding.
 
-Pontos sensíveis do código:
-- `internal/runner`: lista de comandos permitidos, execução sem shell, filtro de ambiente
-  (`BAO_*`, `VAULT_*`, `KEYHOLDER_*`), limite de saída e mascaramento.
-- `internal/bao`: desembrulho do token, remoção das variáveis de token do ambiente,
-  escopo das referências e mensagens de erro sem URL nem corpo da resposta.
-- `cmd/keyholder-mcp`: o que cada tool devolve e o que vai para o log de auditoria.
-- `internal/ref`: validação de referências (sem `..`, sem segmento vazio).
+Sensitive parts of the code:
+- `internal/runner`: allow list, execution without a shell, environment filter
+  (`BAO_*`, `VAULT_*`, `KEYHOLDER_*`), output cap and masking.
+- `internal/bao`: token unwrap, removal of the token variables from the environment,
+  reference scope, and error messages without URLs or response bodies.
+- `cmd/keyholder-mcp`: what each tool returns and what goes to the audit log.
+- `internal/ref`: reference validation (no `..`, no empty segment).
 
-Limites aceitos pelo projeto: o processo executado recebe o valor; o mascaramento só casa
-o valor exato; não há proteção contra um agente hostil com o mesmo usuário do sistema.
-Não aponte esses limites como defeito, a menos que a mudança os piore.
+Limits the project accepts: the executed process receives the value; masking only matches the
+exact value; there is no protection against a hostile agent running as the same OS user. Do not
+report these limits as defects unless the change makes them worse.
 
-Comentários e mensagens de erro do projeto são em português.
-Use os testes existentes para sustentar cada achado e indique quando faltar teste.
+The repository is in English; the documentation also has Portuguese pages under `docs/pt-BR/`.
+Use the existing tests and the tutorials' `expected/` outputs to support each finding, and say
+when a test is missing.

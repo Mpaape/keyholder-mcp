@@ -1,9 +1,9 @@
-// Package runner executa comandos permitidos com segredos resolvidos só na
-// execução (late binding).
+// Package runner runs allowed commands with secrets resolved only at execution
+// time (late binding).
 //
-// O comando roda sem shell: os argumentos vão como lista para o processo, então
-// caracteres especiais de um segredo nunca são interpretados como código.
-// A saída volta com os valores usados mascarados.
+// The command runs without a shell: arguments go to the process as a list, so
+// special characters in a secret are never interpreted as code. The output
+// comes back with the values that were used masked.
 package runner
 
 import (
@@ -22,35 +22,35 @@ import (
 	"keyholder-mcp/internal/ref"
 )
 
-// Padrões do runner.
+// Runner defaults.
 const (
 	DefaultTimeout   = 5 * time.Minute
-	DefaultMaxOutput = 64 * 1024 // bytes por fluxo (stdout e stderr)
+	DefaultMaxOutput = 64 * 1024 // bytes per stream (stdout and stderr)
 )
 
-// Resolver devolve o valor de uma referência. Erros não podem conter o valor.
+// Resolver returns the value of a reference. Errors must not contain the value.
 type Resolver func(context.Context, ref.Ref) (string, error)
 
-// Runner guarda a política de execução.
+// Runner holds the execution policy.
 type Runner struct {
-	Allow     map[string]bool // comandos permitidos, pelo nome exato
-	Scope     string          // prefixo de caminho aceito nas referências; vazio aceita tudo
+	Allow     map[string]bool // allowed commands, by exact name
+	Scope     string          // path prefix accepted in references; empty accepts all
 	Resolve   Resolver
 	Timeout   time.Duration
 	MaxOutput int
-	// BaseEnv é o ambiente herdado pelo filho. Nil usa os.Environ().
-	// Variáveis BAO_*, VAULT_* e KEYHOLDER_* são sempre removidas.
+	// BaseEnv is the environment inherited by the child. Nil uses os.Environ().
+	// BAO_*, VAULT_* and KEYHOLDER_* variables are always removed.
 	BaseEnv []string
 }
 
-// Request é o que o agente pede. Segredos entram só como {{vault://...}}.
+// Request is what the agent asks for. Secrets only enter as {{vault://...}}.
 type Request struct {
-	Command string            `json:"command" jsonschema:"nome do comando permitido, sem caminho e sem placeholders, por exemplo curl ou aws"`
-	Args    []string          `json:"args,omitempty" jsonschema:"argumentos; podem conter {{vault://caminho/CHAVE}}"`
-	Env     map[string]string `json:"env,omitempty" jsonschema:"variáveis extras para o processo; valores podem conter {{vault://caminho/CHAVE}}"`
+	Command string            `json:"command" jsonschema:"name of an allowed command, without a path or placeholders, for example curl or aws"`
+	Args    []string          `json:"args,omitempty" jsonschema:"arguments; may contain {{vault://path/KEY}}"`
+	Env     map[string]string `json:"env,omitempty" jsonschema:"extra variables for the process; values may contain {{vault://path/KEY}}"`
 }
 
-// Result é o que volta ao agente. Nunca contém valores resolvidos.
+// Result is what goes back to the agent. It never contains resolved values.
 type Result struct {
 	ExitCode  int      `json:"exit_code"`
 	Stdout    string   `json:"stdout"`
@@ -60,32 +60,33 @@ type Result struct {
 	TimedOut  bool     `json:"timed_out,omitempty"`
 }
 
-// Erros de política.
+// Policy errors.
 var (
-	ErrNotAllowed = errors.New("comando fora da lista permitida")
-	ErrOutOfScope = errors.New("referência fora do escopo do projeto")
+	ErrNotAllowed = errors.New("command not in the allow list")
+	ErrOutOfScope = errors.New("reference outside the project scope")
 )
 
 var envNameRe = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 
-// Run valida o pedido, resolve as referências, executa e mascara a saída.
+// Run validates the request, resolves the references, runs the command and
+// masks the output.
 func (r *Runner) Run(ctx context.Context, req Request) (Result, error) {
 	if req.Command == "" || ref.HasPlaceholder(req.Command) || strings.ContainsAny(req.Command, `/\`) {
-		return Result{}, fmt.Errorf("%w: informe só o nome do comando", ErrNotAllowed)
+		return Result{}, fmt.Errorf("%w: give only the command name", ErrNotAllowed)
 	}
 	if !r.Allow[req.Command] {
-		return Result{}, fmt.Errorf("%w: %q (permitidos: %s)", ErrNotAllowed, req.Command, strings.Join(r.allowed(), ", "))
+		return Result{}, fmt.Errorf("%w: %q (allowed: %s)", ErrNotAllowed, req.Command, strings.Join(r.allowed(), ", "))
 	}
 	path, err := exec.LookPath(req.Command)
 	if err != nil {
-		return Result{}, fmt.Errorf("comando %q não encontrado no PATH", req.Command)
+		return Result{}, fmt.Errorf("command %q not found in PATH", req.Command)
 	}
 
 	var (
 		m      mask.Masker
 		seen   = map[string]bool{}
 		used   []string
-		values = map[string]string{} // cache por referência dentro desta execução
+		values = map[string]string{} // per-reference cache within this run
 	)
 	resolve := func(rf ref.Ref) (string, error) {
 		if !rf.InScope(r.Scope) {
@@ -122,7 +123,7 @@ func (r *Runner) Run(ctx context.Context, req Request) (Result, error) {
 	sort.Strings(names)
 	for _, k := range names {
 		if !envNameRe.MatchString(k) || isReserved(k) {
-			return Result{}, fmt.Errorf("nome de variável não permitido: %q", k)
+			return Result{}, fmt.Errorf("variable name not allowed: %q", k)
 		}
 		v, _, err := ref.Expand(req.Env[k], resolve)
 		if err != nil {
@@ -146,7 +147,7 @@ func (r *Runner) Run(ctx context.Context, req Request) (Result, error) {
 	cmd := exec.CommandContext(ctx, path, args...)
 	cmd.Env = env
 	cmd.Stdout, cmd.Stderr = stdout, stderr
-	// cmd.Stdin fica nil: o filho lê de um dispositivo nulo.
+	// cmd.Stdin stays nil: the child reads from the null device.
 
 	res := Result{RefsUsed: used}
 	if res.RefsUsed == nil {
@@ -165,7 +166,7 @@ func (r *Runner) Run(ctx context.Context, req Request) (Result, error) {
 	case errors.As(runErr, &exitErr):
 		res.ExitCode = exitErr.ExitCode()
 	default:
-		// Mensagem do sistema, mascarada por segurança.
+		// System message, masked to be safe.
 		return res, errors.New(m.Mask(runErr.Error()))
 	}
 	return res, nil
@@ -185,7 +186,8 @@ func isReserved(name string) bool {
 	return strings.HasPrefix(u, "BAO_") || strings.HasPrefix(u, "VAULT_") || strings.HasPrefix(u, "KEYHOLDER_")
 }
 
-// filterEnv remove do ambiente herdado o token e a configuração do cofre.
+// filterEnv removes the vault token and configuration from the inherited
+// environment.
 func filterEnv(base []string) []string {
 	if base == nil {
 		base = os.Environ()
@@ -200,7 +202,7 @@ func filterEnv(base []string) []string {
 	return out
 }
 
-// capped guarda até max bytes e descarta o resto.
+// capped keeps up to max bytes and discards the rest.
 type capped struct {
 	buf       bytes.Buffer
 	max       int

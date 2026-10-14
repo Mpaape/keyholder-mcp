@@ -1,15 +1,15 @@
-// keyholder-mcp é um servidor MCP (stdio) que deixa agentes de IA usarem
-// credenciais do OpenBao sem ver os valores.
+// keyholder-mcp is an MCP server (stdio) that lets AI agents use credentials
+// stored in OpenBao without ever seeing their values.
 //
-// Configuração por variáveis de ambiente:
+// Configuration comes from environment variables:
 //
-//	BAO_ADDR              endereço do OpenBao (padrão do cliente: https://127.0.0.1:8200)
-//	BAO_WRAPPING_TOKEN    token embrulhado, de uso único (preferido)
-//	BAO_TOKEN             token comum (aceito para a prova de conceito)
-//	KEYHOLDER_KV_MOUNT    mount do KV v2 (padrão: secret)
-//	KEYHOLDER_SCOPE       prefixo de caminho do projeto, por exemplo meu-projeto
-//	KEYHOLDER_ALLOW       comandos permitidos, separados por vírgula, por exemplo curl,aws
-//	KEYHOLDER_TIMEOUT     tempo máximo por execução (padrão: 5m)
+//	BAO_ADDR              OpenBao address (client default: https://127.0.0.1:8200)
+//	BAO_WRAPPING_TOKEN    wrapped, single-use token (preferred)
+//	BAO_TOKEN             plain token (accepted for local testing)
+//	KEYHOLDER_KV_MOUNT    KV v2 mount (default: secret)
+//	KEYHOLDER_SCOPE       project path prefix, for example my-project
+//	KEYHOLDER_ALLOW       allowed commands, comma separated, for example curl,aws
+//	KEYHOLDER_TIMEOUT     maximum time per run (default: 5m)
 package main
 
 import (
@@ -53,7 +53,7 @@ func loadConfig() (config, error) {
 	if v := os.Getenv("KEYHOLDER_TIMEOUT"); v != "" {
 		d, err := time.ParseDuration(v)
 		if err != nil || d <= 0 {
-			return c, fmt.Errorf("KEYHOLDER_TIMEOUT inválido: %q", v)
+			return c, fmt.Errorf("invalid KEYHOLDER_TIMEOUT: %q", v)
 		}
 		c.timeout = d
 	}
@@ -73,17 +73,17 @@ type listOutput struct {
 	Note    string      `json:"note"`
 }
 
-var errNoSession = errors.New("sem sessão com o cofre; o humano precisa renovar o acesso fora do chat")
+var errNoSession = errors.New("no session with the vault; a human must renew access outside the chat")
 
 func main() {
-	showVersion := flag.Bool("version", false, "mostra a versão e sai")
+	showVersion := flag.Bool("version", false, "print the version and exit")
 	flag.Parse()
 	if *showVersion {
 		fmt.Println("keyholder-mcp", version)
 		return
 	}
 
-	// stdout é do protocolo MCP; logs e auditoria vão para stderr.
+	// stdout belongs to the MCP protocol; logs and the audit trail go to stderr.
 	log.SetOutput(os.Stderr)
 	log.SetFlags(log.LstdFlags | log.LUTC)
 
@@ -94,14 +94,14 @@ func main() {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	// Sem sessão o servidor sobe mesmo assim: keyholder_status explica o motivo
-	// e as outras tools falham de forma previsível (FL-07).
+	// Without a session the server still starts: keyholder_status explains why
+	// and the other tools fail in a predictable way.
 	store, openErr := bao.Open(ctx, cfg.mount, cfg.scope)
 	if openErr != nil {
-		log.Printf("sessão não aberta: %v", openErr)
+		log.Printf("session not opened: %v", openErr)
 	}
 	if cfg.scope == "" {
-		log.Printf("aviso: KEYHOLDER_SCOPE vazio; todas as referências do mount %q ficam acessíveis", cfg.mount)
+		log.Printf("warning: KEYHOLDER_SCOPE is empty; every reference in mount %q is reachable", cfg.mount)
 	}
 
 	run := &runner.Runner{
@@ -117,7 +117,7 @@ func main() {
 
 	mcp.AddTool(server, &mcp.Tool{
 		Name:        "keyholder_status",
-		Description: "Estado do cofre e da sessão: selado ou não, TTL restante do token e políticas. Nunca devolve tokens nem valores.",
+		Description: "Vault and session status: sealed or not, remaining token TTL and policies. Never returns tokens or secret values.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, bao.Status, error) {
 		if store == nil {
 			return nil, bao.Status{Mount: cfg.mount, Scope: cfg.scope, SessionError: openErr.Error()}, nil
@@ -127,8 +127,8 @@ func main() {
 	})
 
 	mcp.AddTool(server, &mcp.Tool{
-		Name:        "keyholder_listar",
-		Description: "Lista as referências vault:// disponíveis no escopo do projeto. Devolve só nomes, nunca valores.",
+		Name:        "keyholder_list",
+		Description: "Lists the vault:// references available in the project scope. Returns names only, never values.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, listOutput, error) {
 		if store == nil {
 			return nil, listOutput{}, errNoSession
@@ -143,31 +143,31 @@ func main() {
 		return nil, listOutput{
 			Scope:   cfg.scope,
 			Entries: entries,
-			Note:    "Use {{vault://caminho/CHAVE}} em args ou env de keyholder_executar.",
+			Note:    "Use {{vault://path/KEY}} in the args or env of keyholder_run.",
 		}, nil
 	})
 
 	mcp.AddTool(server, &mcp.Tool{
-		Name: "keyholder_executar",
-		Description: "Executa um comando permitido, sem shell, trocando {{vault://caminho/CHAVE}} pelo valor só no momento da execução. " +
-			"Exemplo: command=curl, args=[\"-H\", \"Authorization: Bearer {{vault://meu-projeto/dev/API_TOKEN}}\", \"https://api.example.com/health\"]. " +
-			"A saída volta com os valores mascarados. O mascaramento só pega o valor exato: não codifique nem imprima segredos de propósito.",
+		Name: "keyholder_run",
+		Description: "Runs an allowed command, without a shell, replacing {{vault://path/KEY}} with the value only at execution time. " +
+			"Example: command=curl, args=[\"-H\", \"Authorization: Bearer {{vault://my-project/dev/API_TOKEN}}\", \"https://api.example.com/health\"]. " +
+			"The output comes back with the values masked. Masking only catches the exact value: do not encode or print secrets on purpose.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in runner.Request) (*mcp.CallToolResult, runner.Result, error) {
 		if store == nil {
 			return nil, runner.Result{}, errNoSession
 		}
 		start := time.Now()
 		res, err := run.Run(ctx, in)
-		// Auditoria: comando, referências e resultado. Nunca valores nem argumentos.
+		// Audit: command, references and result. Never values or arguments.
 		status := "ok"
 		if err != nil {
-			status = "erro: " + err.Error()
+			status = "error: " + err.Error()
 		}
 		log.Printf("audit cmd=%q refs=%v exit=%d dur=%s status=%s", in.Command, res.RefsUsed, res.ExitCode, time.Since(start).Round(time.Millisecond), status)
 		return nil, res, err
 	})
 
 	if err := server.Run(ctx, &mcp.StdioTransport{}); err != nil && !errors.Is(err, context.Canceled) {
-		log.Fatalf("servidor MCP: %v", err)
+		log.Fatalf("MCP server: %v", err)
 	}
 }

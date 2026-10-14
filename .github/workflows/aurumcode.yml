@@ -1,7 +1,7 @@
 name: AurumCode review
 
-# Revisão de cada PR pelo AurumCode, com as regras de .aurumcode/ (lidas da
-# branch base). Mesmos secrets e variáveis do repositório Mpaape/AurumCode.
+# Reviews each PR with AurumCode, using the rules in .aurumcode/ (read from
+# the base branch). Same secrets and variables as the Mpaape/AurumCode repo.
 
 on:
   pull_request:
@@ -23,19 +23,19 @@ jobs:
     with:
       model: ${{ vars.LLM_MODEL }}
       provider: ${{ vars.LLM_PROVIDER }}
-      # Reserva: tentada só quando o provedor principal falha.
+      # Fallback: tried only when the primary provider fails.
       fallback_1_provider: ${{ vars.LLM_FALLBACK_1_PROVIDER }}
       fallback_1_model: ${{ vars.LLM_FALLBACK_1_MODEL }}
       security: true
-    # Só o que o review usa, nunca secrets: inherit.
+    # Only what the review uses, never secrets: inherit.
     secrets:
       LLM_API_KEY: ${{ secrets.LLM_API_KEY }}
       LLM_BASE_URL: ${{ secrets.LLM_BASE_URL }}
       LLM_FALLBACK_1_API_KEY: ${{ secrets.LLM_FALLBACK_1_API_KEY }}
       LLM_FALLBACK_1_BASE_URL: ${{ secrets.LLM_FALLBACK_1_BASE_URL }}
 
-  # SARIF na aba Security (Code scanning). PR de fork não recebe a permissão:
-  # o if pula e o SARIF fica só como artefato.
+  # SARIF to the Security tab (code scanning). Fork PRs do not get the
+  # permission: the if skips this and the SARIF stays an artifact.
   upload-sarif:
     name: SARIF na aba Security
     needs: review
@@ -55,9 +55,9 @@ jobs:
           sarif_file: aurumcode-review.sarif
           category: aurumcode-policy-gate
 
-  # Falha fechada sem provedor: sem LLM_API_KEY/LLM_BASE_URL (PR de fork ou do
-  # Dependabot, ou secret apagado) o review não roda; este job publica o
-  # motivo no status aurumcode/policy-gate como failure. Nunca publica success.
+  # Fails closed without a provider: without LLM_API_KEY/LLM_BASE_URL (fork or
+  # Dependabot PR, or a deleted secret) the review does not run; this job
+  # posts the reason on aurumcode/policy-gate as failure. Never posts success.
   provider:
     name: LLM provider configured
     runs-on: ubuntu-latest
@@ -75,10 +75,10 @@ jobs:
             echo "Provedor configurado; o job review publica aurumcode/policy-gate"
             exit 0
           fi
-          reason="review não executado: secrets LLM_API_KEY e LLM_BASE_URL ausentes"
+          reason="review not run: secrets LLM_API_KEY and LLM_BASE_URL are missing"
           gh api --method POST "repos/${REPOSITORY}/statuses/${HEAD_SHA}" \
             -f state=failure -f context=aurumcode/policy-gate \
             -f description="${reason}" >/dev/null ||
-            echo "::warning::não foi possível publicar o status aurumcode/policy-gate"
+            echo "::warning::could not post the aurumcode/policy-gate status"
           echo "::error::${reason}"
           exit 1

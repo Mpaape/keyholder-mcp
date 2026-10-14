@@ -1,7 +1,7 @@
-// Package mask oculta valores conhecidos em textos de saída.
+// Package mask hides known values in output text.
 //
-// É uma defesa, não uma garantia: só casa o valor exato. Um valor codificado
-// (base64, hex, URL-encoded) ou fatiado passa sem ser mascarado.
+// It is a defense, not a guarantee: it only matches the exact value. An
+// encoded (base64, hex, URL-encoded) or split value passes through unmasked.
 package mask
 
 import (
@@ -9,19 +9,19 @@ import (
 	"strings"
 )
 
-// MinLen é o menor valor mascarado. Valores mais curtos destruiriam a saída
-// (um segredo "a" mascararia toda letra a) e são fracos de qualquer forma.
+// MinLen is the shortest value that gets masked. Shorter values would wreck
+// the output (a secret "a" would mask every letter a) and are weak anyway.
 const MinLen = 4
 
-// Masker troca valores secretos por um rótulo com a referência.
+// Masker replaces secret values with a label that names the reference.
 type Masker struct {
 	pairs []pair
 }
 
 type pair struct{ value, label string }
 
-// Add registra um valor e o rótulo que o substitui, por exemplo a referência.
-// Valores menores que MinLen são ignorados.
+// Add registers a value and the label that replaces it, such as the
+// reference. Values shorter than MinLen are ignored.
 func (m *Masker) Add(value, label string) {
 	if len(value) < MinLen {
 		return
@@ -31,12 +31,12 @@ func (m *Masker) Add(value, label string) {
 			return
 		}
 	}
-	m.pairs = append(m.pairs, pair{value, "[oculto:" + label + "]"})
-	// Valores mais longos primeiro, para um valor que contém outro ser trocado inteiro.
+	m.pairs = append(m.pairs, pair{value, "[hidden:" + label + "]"})
+	// Longest values first, so a value that contains another is replaced whole.
 	sort.SliceStable(m.pairs, func(i, j int) bool { return len(m.pairs[i].value) > len(m.pairs[j].value) })
 }
 
-// Mask devolve o texto com todos os valores registrados trocados.
+// Mask returns the text with every registered value replaced.
 func (m *Masker) Mask(s string) string {
 	for _, p := range m.pairs {
 		s = strings.ReplaceAll(s, p.value, p.label)
