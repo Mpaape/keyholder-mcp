@@ -19,3 +19,7 @@ __pycache__/
 dist/
 build/
 .DS_Store
+
+# Binários
+/keyholder-mcp
+*.exe
