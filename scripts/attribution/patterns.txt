@@ -1,0 +1,8 @@
+# AI attribution that must never appear in commits, PRs, issues or comments.
+# One extended regular expression per line, matched case-insensitively.
+# Used by .githooks/commit-msg, .claude/hooks/no-ai-attribution.sh and
+# .github/workflows/attribution.yml (scripts/attribution/guard.py).
+^[[:space:]]*co-authored-by:.*(claude|anthropic|openai|chatgpt|copilot|gemini|cursor)
+^[[:space:]]*claude-session:
+generated (with|by) \[?claude
+claude\.ai/code/session_

@@ -69,6 +69,7 @@ Tutorial pages include the files in `demo/tutorials/*/expected/` at build time, 
 | `ci.yml` | `gofmt`, `go vet`, `go test`, `go build` on Linux, Windows and macOS; every tutorial and its `--check` on Linux |
 | `aurumcode.yml` | AI code review with the project rules, gitleaks and Semgrep |
 | `docs.yml` | Builds the site with `--strict` on every PR; publishes it to GitHub Pages from `main` |
+| `attribution.yml` | Removes AI attribution from PR, issue and comment bodies; fails a PR whose commits carry it |
 
 ## AurumCode gate in your agent
 
@@ -80,6 +81,16 @@ claude                                         # approve the project server "aur
 ```
 
 Without a working provider the gate answers `inconclusive`, never `pass`.
+
+## No AI attribution
+
+Commits, pull requests, issues and comments carry no AI attribution. Enable the local hook once per clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+Claude Code picks up `.claude/settings.json`, which turns its attribution off and blocks commands that would publish it. On GitHub, `attribution.yml` strips it from bodies and fails a PR whose commits carry it. All three read `scripts/attribution/patterns.txt`.
 
 ## Contributing
 

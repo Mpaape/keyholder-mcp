@@ -24,6 +24,16 @@ Requirements, layout and the documentation site: [Development](https://mpaape.gi
 4. Add a line to `CHANGELOG.md` under `## Unreleased`.
 5. Open the pull request. CI runs on Linux, Windows and macOS, and [AurumCode](https://github.com/Mpaape/AurumCode) reviews it against the rules in `.aurumcode/skills/`. The `aurumcode/policy-gate` check must pass.
 
+## No AI attribution
+
+Commits, pull requests, issues and comments carry no AI attribution: no `Co-Authored-By` for an AI tool, no session links, no "Generated with" footers. Three guards share the patterns in `scripts/attribution/patterns.txt`:
+
+| Guard | Where | Does |
+| --- | --- | --- |
+| `.githooks/commit-msg` | your clone, after `git config core.hooksPath .githooks` | rejects the commit |
+| `.claude/settings.json` + `.claude/hooks/no-ai-attribution.sh` | Claude Code in this repository | turns attribution off and blocks `git commit`, `gh pr`, `gh issue` and `gh api` commands that carry it |
+| `.github/workflows/attribution.yml` | GitHub | removes it from PR, issue and comment bodies; fails a PR whose commits carry it |
+
 ## Rules that block a merge
 
 The full list is on [Code review](https://mpaape.github.io/keyholder-mcp/review/). The most important ones:
@@ -47,5 +57,7 @@ Obrigado por ajudar. O inglês é a língua principal do repositório (código, 
 3. Se a mudança altera uma tool, uma variável, uma mensagem de erro ou o fluxo de acesso, atualize `docs/` **e** `docs/pt-BR/`, e rode de novo os tutoriais afetados, fazendo commit de `out/` e `expected/` juntos.
 4. Acrescente uma linha ao `CHANGELOG.md` em `## Unreleased`.
 5. Abra o pull request. O CI roda em Linux, Windows e macOS e o AurumCode o revisa; o check `aurumcode/policy-gate` precisa passar.
+
+Commits, pull requests, issues e comentários não levam atribuição de IA. Ative o hook local uma vez por clone: `git config core.hooksPath .githooks`. O Claude Code já carrega `.claude/settings.json`, e o workflow `attribution.yml` limpa os textos no GitHub.
 
 Detalhes: [Desenvolvimento](https://mpaape.github.io/keyholder-mcp/pt-BR/development/) e [Revisão de código](https://mpaape.github.io/keyholder-mcp/pt-BR/review/). Vulnerabilidades: veja o [SECURITY.md](SECURITY.md#português), nunca uma issue pública.

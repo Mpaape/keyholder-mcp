@@ -69,6 +69,7 @@ As páginas de tutorial incluem os arquivos de `demo/tutorials/*/expected/` na g
 | `ci.yml` | `gofmt`, `go vet`, `go test`, `go build` em Linux, Windows e macOS; cada tutorial e seu `--check` no Linux |
 | `aurumcode.yml` | Revisão de código por IA com as regras do projeto, gitleaks e Semgrep |
 | `docs.yml` | Gera o site com `--strict` em todo PR; publica no GitHub Pages a partir do `main` |
+| `attribution.yml` | Remove atribuição de IA de PRs, issues e comentários; reprova um PR cujos commits a tragam |
 
 ## Gate do AurumCode no seu agente
 
@@ -80,6 +81,16 @@ claude                                         # aprove o servidor de projeto "a
 ```
 
 Sem provedor funcionando o gate responde `inconclusive`, nunca `pass`.
+
+## Sem atribuição de IA
+
+Commits, pull requests, issues e comentários não levam atribuição de IA. Ative o hook local uma vez por clone:
+
+```bash
+git config core.hooksPath .githooks
+```
+
+O Claude Code carrega o `.claude/settings.json`, que desliga a atribuição dele e bloqueia comandos que a publicariam. No GitHub, o `attribution.yml` a remove dos textos e reprova um PR cujos commits a tragam. Os três leem `scripts/attribution/patterns.txt`.
 
 ## Contribuir
 

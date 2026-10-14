@@ -9,6 +9,7 @@
 - `khcall`, a minimal MCP client for debugging and for the tutorials.
 - `README.pt-BR.md`, `CONTRIBUTING.md`.
 - `.mcp.json` with the AurumCode gate (`aurumcode mcp`) for Claude Code.
+- No-AI-attribution guard: `.githooks/commit-msg`, a Claude Code hook and the `attribution.yml` workflow, sharing `scripts/attribution/patterns.txt`.
 - CI with `gofmt`, `go vet`, `go test` and `go build` on Linux, Windows and macOS.
 - MCP server in Go with `keyholder_status`, `keyholder_list` and `keyholder_run`.
 - Runner with `{{vault://...}}` placeholders resolved only at execution time, without a shell, with masked output and time and output limits.

@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Rejects commit messages with AI attribution (trailers or footers).
+# Enable once per clone: git config core.hooksPath .githooks
+set -euo pipefail
+root="$(git rev-parse --show-toplevel)"
+patterns="$root/scripts/attribution/patterns.txt"
+[ -f "$patterns" ] || exit 0
+if hits="$(grep -v '^#' "$1" | grep -Ei -f <(grep -v '^#' "$patterns"))"; then
+  echo "commit-msg: AI attribution is not allowed in this repository:" >&2
+  printf '  %s\n' "$hits" >&2
+  exit 1
+fi
