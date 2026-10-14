@@ -30,7 +30,7 @@ Mesmos nomes usados no repositório do AurumCode. Configure em Settings → Secr
 | Secret | `LLM_API_KEY` | Sim | Chave da API do Claude |
 | Secret | `LLM_BASE_URL` | Sim | `https://api.anthropic.com/v1` |
 | Variável | `LLM_PROVIDER` | Não | `anthropic` |
-| Variável | `LLM_MODEL` | Depende do provedor | Id do modelo, por exemplo `claude-sonnet-5-5` |
+| Variável | `LLM_MODEL` | Depende do provedor | Id do modelo, por exemplo `claude-haiku-5-5` |
 | Secret | `LLM_FALLBACK_1_API_KEY` | Não | Chave do provedor reserva |
 | Secret | `LLM_FALLBACK_1_BASE_URL` | Não | URL do provedor reserva |
 | Variável | `LLM_FALLBACK_1_PROVIDER` | Não | Perfil do provedor reserva |
@@ -42,7 +42,7 @@ Pelo terminal, com o [GitHub CLI](https://cli.github.com/) (o `gh secret set` se
 gh secret set LLM_API_KEY -R Mpaape/keyholder-mcp
 gh secret set LLM_BASE_URL -R Mpaape/keyholder-mcp --body "https://api.anthropic.com/v1"
 gh variable set LLM_PROVIDER -R Mpaape/keyholder-mcp --body "anthropic"
-gh variable set LLM_MODEL -R Mpaape/keyholder-mcp --body "claude-sonnet-5-5"
+gh variable set LLM_MODEL -R Mpaape/keyholder-mcp --body "claude-haiku-5-5"
 ```
 
 Perfis aceitos e URLs de cada provedor: [docs/provedores.md do AurumCode](https://github.com/Mpaape/AurumCode/blob/v2.0.0/docs/provedores.md).
