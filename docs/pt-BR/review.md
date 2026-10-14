@@ -1,21 +1,21 @@
 # Revisão de código
 
-Todo pull request é revisado pelo [AurumCode](https://github.com/Mpaape/AurumCode) v2.0.0 com as regras do próprio projeto. O check `aurumcode/policy-gate` reprova o PR quando há um achado `error`.
+O [AurumCode](https://github.com/Mpaape/AurumCode) v2.0.0 é uma etapa do pipeline de CI: em todo pull request, depois que os testes e os tutoriais passam, ele confere a mudança contra as regras do próprio projeto. O veredito é o status `aurumcode/policy-gate`, que reprova com um achado `error` e é obrigatório para o merge no `main`. Ele publica o parecer como comentário no pull request e nunca aprova um pull request; o merge é decisão de uma pessoa.
 
 ## Como está ligado
 
 | Arquivo | Papel |
 | --- | --- |
-| `.github/workflows/aurumcode.yml` | Chama o workflow reutilizável `Mpaape/AurumCode/.github/workflows/review.yml@v2.0.0` em cada PR |
+| `.github/workflows/ci.yml`, job `aurumcode` | Chama o workflow reutilizável `Mpaape/AurumCode/.github/workflows/review.yml@v2.0.0` depois de `test` e `tutorials` |
 | `.aurumcode/config.yml` | Idioma, publicação, gate, scanners, deliberação e exceções |
 | `.aurumcode/prompt.md` | Contexto do projeto enviado ao modelo |
 | `.aurumcode/skills/<nome>/SKILL.md` | Regras do projeto; cada seção `## ` vira uma regra citável |
 
-A configuração e as skills são lidas do **branch base** do PR: uma regra nova só vale depois de entrar no `main`.
+A configuração e as skills são lidas do **branch base** do PR: uma regra nova vale para PRs para o `dev` quando está no `dev`, e para `dev` → `main` quando está no `main`.
 
 | Job | Faz |
 | --- | --- |
-| `review` | Revisão pelo modelo, passe determinístico de segurança, gitleaks e Semgrep |
+| `aurumcode` | Revisão pelo modelo, passe determinístico de segurança, gitleaks, Semgrep e `go vet`; só roda se `test` e `tutorials` passaram |
 | `upload-sarif` | Envia o SARIF para a aba Security (code scanning); pulado em PRs de fork |
 | `provider` | Falha fechado: sem `LLM_API_KEY` e `LLM_BASE_URL`, marca `aurumcode/policy-gate` como reprovado |
 
@@ -53,7 +53,7 @@ Perfis e URLs de provedores: [provedores do AurumCode](https://github.com/Mpaape
 | `semgrep` | SAST; reprova só em linhas que o PR acrescentou |
 | `govet` | `go vet` nos pacotes alterados; reprova com um aviso |
 
-Para o check bloquear merges, depois do primeiro PR: Settings → Branches → regra do `main` → *Require status checks to pass before merging* → `aurumcode/policy-gate`.
+O `aurumcode/policy-gate` é check obrigatório no ruleset do `main` ([`.github/rulesets/main.json`](https://github.com/Mpaape/keyholder-mcp/blob/main/.github/rulesets/main.json)).
 
 ## Regras do projeto
 

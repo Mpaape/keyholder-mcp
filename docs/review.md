@@ -1,21 +1,21 @@
 # Code review
 
-Every pull request is reviewed by [AurumCode](https://github.com/Mpaape/AurumCode) v2.0.0 with the project's own rules. The `aurumcode/policy-gate` check fails the PR when there is an `error` finding.
+[AurumCode](https://github.com/Mpaape/AurumCode) v2.0.0 is a stage of the CI pipeline: on every pull request, after the tests and tutorials pass, it checks the change against the project's own rules. Its verdict is the `aurumcode/policy-gate` status, which fails on an `error` finding and is required to merge into `main`. It posts its report as a pull request comment and never approves a pull request; merging is a person's decision.
 
 ## How it is wired
 
 | File | Role |
 | --- | --- |
-| `.github/workflows/aurumcode.yml` | Calls the reusable workflow `Mpaape/AurumCode/.github/workflows/review.yml@v2.0.0` on each PR |
+| `.github/workflows/ci.yml`, job `aurumcode` | Calls the reusable workflow `Mpaape/AurumCode/.github/workflows/review.yml@v2.0.0` after `test` and `tutorials` |
 | `.aurumcode/config.yml` | Language, publication, gate, scanners, deliberation and exceptions |
 | `.aurumcode/prompt.md` | Project context sent to the model |
 | `.aurumcode/skills/<name>/SKILL.md` | Project rules; each `## ` section becomes a citable rule |
 
-Configuration and skills are read from the PR's **base branch**: a new rule applies only after it is merged into `main`.
+Configuration and skills are read from the PR's **base branch**: a new rule applies to pull requests into `dev` once it is on `dev`, and to `dev` → `main` once it is on `main`.
 
 | Job | Does |
 | --- | --- |
-| `review` | Model review, deterministic security pass, gitleaks and Semgrep |
+| `aurumcode` | Model review, deterministic security pass, gitleaks, Semgrep and `go vet`; runs only when `test` and `tutorials` passed |
 | `upload-sarif` | Sends the SARIF to the Security tab (code scanning); skipped on fork PRs |
 | `provider` | Fails closed: without `LLM_API_KEY` and `LLM_BASE_URL`, marks `aurumcode/policy-gate` as failed |
 
@@ -53,7 +53,7 @@ Provider profiles and URLs: [AurumCode providers](https://github.com/Mpaape/Auru
 | `semgrep` | SAST; fails only on lines the PR added |
 | `govet` | `go vet` on the touched packages; fails on a warning |
 
-To make the check block merges, after the first PR: Settings → Branches → rule for `main` → *Require status checks to pass before merging* → `aurumcode/policy-gate`.
+`aurumcode/policy-gate` is a required check in the `main` ruleset ([`.github/rulesets/main.json`](https://github.com/Mpaape/keyholder-mcp/blob/main/.github/rulesets/main.json)).
 
 ## Project rules
 

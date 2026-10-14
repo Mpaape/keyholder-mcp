@@ -66,8 +66,7 @@ As páginas de tutorial incluem os arquivos de `demo/tutorials/*/expected/` na g
 
 | Workflow | Roda |
 | --- | --- |
-| `ci.yml` | `gofmt`, `go vet`, `go test`, `go build` em Linux, Windows e macOS; cada tutorial e seu `--check` no Linux |
-| `aurumcode.yml` | Revisão de código por IA com as regras do projeto, gitleaks e Semgrep |
+| `ci.yml` | O pipeline: `gofmt`, `go vet`, `go test`, `go build` em Linux, Windows e macOS; cada tutorial e seu `--check` no Linux; depois, num pull request, o gate do AurumCode (regras do projeto, gitleaks, Semgrep), que nunca aprova |
 | `release.yml` | Quando a `main` recebe uma versão do CHANGELOG ainda sem release (ou numa tag `v*`): testa, compila os binários para seis plataformas e publica com `SHA256SUMS` e a seção do CHANGELOG |
 | `docs.yml` | Gera o site com `--strict` em todo PR; publica no GitHub Pages a partir do `main` |
 | `attribution.yml` | Uso do mantenedor: remove atribuição de IA dos pull requests, issues e comentários dele. Não afeta contribuidores |

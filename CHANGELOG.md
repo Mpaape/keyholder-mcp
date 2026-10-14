@@ -7,6 +7,7 @@
 - Two branches only: `dev` takes every change, `main` changes only through a pull request from `dev`. Rulesets versioned in `.github/rulesets/`; CI and the docs build also run on `dev`.
 - The no-AI-attribution guard is the maintainer's own: `attribution.yml` acts only on the repository owner's pull requests, issues and comments and is not a required check or a contribution rule.
 - AurumCode publishes its report as a pull request comment (`publication: comments`) instead of a formal review, so the bot never approves a pull request; its verdict is only the `aurumcode/policy-gate` status.
+- The AurumCode gate is a stage of `ci.yml`: it runs on a pull request only after `test` and `tutorials` pass. `aurumcode.yml` is removed.
 
 ## 0.2.0 - 2026-10-14
 
