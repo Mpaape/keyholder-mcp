@@ -120,4 +120,6 @@ With the AurumCode CLI (Go 1.27 or its Docker image), at the repository root:
 aurumcode review --base origin/main --seguranca
 ```
 
+Known limits of AurumCode v2.0.0 met while adopting it (rule catalog budget, reserved concurrency group, SARIF job) are tracked in [Mpaape/AurumCode#179](https://github.com/Mpaape/AurumCode/issues/179).
+
 Without `LLM_API_KEY` and `LLM_BASE_URL` only the deterministic analysis runs; without `gitleaks` and `semgrep` on the `PATH` those scanners are reported as inconclusive. See [AurumCode getting started](https://github.com/Mpaape/AurumCode/blob/v2.0.0/docs/getting-started.md).
