@@ -38,21 +38,11 @@ Both are protected against deletion and force pushes, and `main` only changes th
 ## Shipping to main
 
 1. On `dev`, move the `## Unreleased` entries under `## X.Y.Z - date` in `CHANGELOG.md` when the change should be released.
-2. Open a pull request from `dev` to `main`. The required checks: `go test` on the three systems, `tutorials`, `No AI attribution` and `aurumcode/policy-gate`.
+2. Open a pull request from `dev` to `main`. The required checks: `go test` on the three systems, `tutorials` and `aurumcode/policy-gate`.
 3. Merge it with **Create a merge commit**, the only method `main` allows, so `dev` can be fast-forwarded afterwards.
 4. Fast-forward `dev` to `main`: `git fetch origin && git push origin origin/main:dev`.
 
 When the merge reaches `main`, the site is published, and if `CHANGELOG.md` has a version without a release, the release workflow tags it and publishes the binaries.
-
-## No AI attribution
-
-Commits, pull requests, issues and comments carry no AI attribution: no `Co-Authored-By` for an AI tool, no session links, no "Generated with" footers. Three guards share the patterns in `scripts/attribution/patterns.txt`:
-
-| Guard | Where | Does |
-| --- | --- | --- |
-| `.githooks/commit-msg` | your clone, after `git config core.hooksPath .githooks` | rejects the commit |
-| `.claude/settings.json` + `.claude/hooks/no-ai-attribution.sh` | Claude Code in this repository | turns attribution off and blocks `git commit`, `gh pr`, `gh issue` and `gh api` commands that carry it |
-| `.github/workflows/attribution.yml` | GitHub | removes it from PR, issue and comment bodies; fails a PR whose commits carry it |
 
 ## Rules that block a merge
 
@@ -92,12 +82,10 @@ Os dois são protegidos contra exclusão e force push, e o `main` só muda por u
 **Levar para o `main`:**
 
 1. No `dev`, mova as entradas de `## Unreleased` para `## X.Y.Z - data` no `CHANGELOG.md` quando a mudança deve virar release.
-2. Abra um pull request de `dev` para `main`. Checks obrigatórios: `go test` nos três sistemas, `tutorials`, `No AI attribution` e `aurumcode/policy-gate`.
+2. Abra um pull request de `dev` para `main`. Checks obrigatórios: `go test` nos três sistemas, `tutorials` e `aurumcode/policy-gate`.
 3. Faça o merge com **Create a merge commit**, o único método que o `main` aceita, para o `dev` poder avançar depois.
 4. Avance o `dev` até o `main`: `git fetch origin && git push origin origin/main:dev`.
 
 Quando o merge chega ao `main`, o site é publicado e, se o `CHANGELOG.md` tiver uma versão sem release, o workflow de release cria a tag e publica os binários.
-
-Commits, pull requests, issues e comentários não levam atribuição de IA. Ative o hook local uma vez por clone: `git config core.hooksPath .githooks`. O Claude Code já carrega `.claude/settings.json`, e o workflow `attribution.yml` limpa os textos no GitHub.
 
 Detalhes: [Desenvolvimento](https://mpaape.github.io/keyholder-mcp/pt-BR/development/) e [Revisão de código](https://mpaape.github.io/keyholder-mcp/pt-BR/review/). Vulnerabilidades: veja o [SECURITY.md](SECURITY.md#português), nunca uma issue pública.

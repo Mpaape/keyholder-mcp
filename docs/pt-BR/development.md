@@ -70,7 +70,7 @@ As páginas de tutorial incluem os arquivos de `demo/tutorials/*/expected/` na g
 | `aurumcode.yml` | Revisão de código por IA com as regras do projeto, gitleaks e Semgrep |
 | `release.yml` | Quando a `main` recebe uma versão do CHANGELOG ainda sem release (ou numa tag `v*`): testa, compila os binários para seis plataformas e publica com `SHA256SUMS` e a seção do CHANGELOG |
 | `docs.yml` | Gera o site com `--strict` em todo PR; publica no GitHub Pages a partir do `main` |
-| `attribution.yml` | Remove atribuição de IA de PRs, issues e comentários; reprova um PR cujos commits a tragam |
+| `attribution.yml` | Uso do mantenedor: remove atribuição de IA dos pull requests, issues e comentários dele. Não afeta contribuidores |
 
 ## Gate do AurumCode no seu agente
 
@@ -88,16 +88,6 @@ Sem provedor funcionando o gate responde `inconclusive`, nunca `pass`.
 Só dois branches: `dev`, onde toda mudança entra, e `main`, o que está publicado. O `main` só muda por pull request de `dev`, com merge commit depois que os checks passam; em seguida o `dev` avança até o `main`. Contribuidores abrem pull request para o `dev` a partir de um fork. Detalhes e passos: [CONTRIBUTING.md](https://github.com/Mpaape/keyholder-mcp/blob/main/CONTRIBUTING.md#português).
 
 Para publicar uma versão, mova as entradas de `## Unreleased` para `## X.Y.Z - data` no `CHANGELOG.md` no `dev` e leve ao `main`. O `release.yml` vê uma versão sem release, cria a tag `vX.Y.Z` nesse commit e publica os binários.
-
-## Sem atribuição de IA
-
-Commits, pull requests, issues e comentários não levam atribuição de IA. Ative o hook local uma vez por clone:
-
-```bash
-git config core.hooksPath .githooks
-```
-
-O Claude Code carrega o `.claude/settings.json`, que desliga a atribuição dele e bloqueia comandos que a publicariam. No GitHub, o `attribution.yml` a remove dos textos e reprova um PR cujos commits a tragam. Os três leem `scripts/attribution/patterns.txt`.
 
 ## Contribuir
 

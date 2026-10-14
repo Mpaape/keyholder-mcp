@@ -5,6 +5,7 @@
 ### Changed
 
 - Two branches only: `dev` takes every change, `main` changes only through a pull request from `dev`. Rulesets versioned in `.github/rulesets/`; CI and the docs build also run on `dev`.
+- The no-AI-attribution guard is the maintainer's own: `attribution.yml` acts only on the repository owner's pull requests, issues and comments and is not a required check or a contribution rule.
 
 ## 0.2.0 - 2026-10-14
 

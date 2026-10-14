@@ -1,8 +1,9 @@
 name: No AI attribution
 
-# Commits, pull requests, issues and comments in this repository carry no AI
-# attribution. This removes footers and trailer lines from bodies and fails a
-# pull request whose commits carry them. Patterns: scripts/attribution/patterns.txt.
+# The maintainer's own guard: removes AI attribution footers and trailer lines
+# from the repository owner's pull requests, issues and comments, and fails the
+# owner's pull requests whose commits carry them. Anyone else's content is left
+# alone. Patterns: scripts/attribution/patterns.txt.
 #
 # pull_request_target runs the base branch's copy of this workflow and of
 # guard.py; the pull request's code is never checked out or run.
@@ -28,6 +29,9 @@ concurrency:
 jobs:
   guard:
     name: No AI attribution
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.comment.user.login || github.event.pull_request.user.login || github.event.issue.user.login) == github.repository_owner
     runs-on: ubuntu-latest
     steps:
       # actions/checkout v7.0.1; the base branch, never the PR head.

@@ -70,7 +70,7 @@ Tutorial pages include the files in `demo/tutorials/*/expected/` at build time, 
 | `aurumcode.yml` | AI code review with the project rules, gitleaks and Semgrep |
 | `release.yml` | When `main` gets a CHANGELOG version with no release yet (or on a `v*` tag): tests, builds the binaries for six platforms, publishes them with `SHA256SUMS` and the CHANGELOG section |
 | `docs.yml` | Builds the site with `--strict` on every PR; publishes it to GitHub Pages from `main` |
-| `attribution.yml` | Removes AI attribution from PR, issue and comment bodies; fails a PR whose commits carry it |
+| `attribution.yml` | The maintainer's own: strips AI attribution from the maintainer's pull requests, issues and comments. Contributors are not affected |
 
 ## AurumCode gate in your agent
 
@@ -88,16 +88,6 @@ Without a working provider the gate answers `inconclusive`, never `pass`.
 Two branches only: `dev`, where every change lands, and `main`, what is released. `main` changes only through a pull request from `dev`, merged with a merge commit after its checks pass; then `dev` is fast-forwarded to `main`. Contributors open pull requests into `dev` from a fork. Details and the exact steps: [CONTRIBUTING.md](https://github.com/Mpaape/keyholder-mcp/blob/main/CONTRIBUTING.md#branches).
 
 To release, move the `## Unreleased` entries under `## X.Y.Z - date` in `CHANGELOG.md` on `dev` and ship it to `main`. `release.yml` sees a version without a release, creates the tag `vX.Y.Z` on that commit and publishes the binaries.
-
-## No AI attribution
-
-Commits, pull requests, issues and comments carry no AI attribution. Enable the local hook once per clone:
-
-```bash
-git config core.hooksPath .githooks
-```
-
-Claude Code picks up `.claude/settings.json`, which turns its attribution off and blocks commands that would publish it. On GitHub, `attribution.yml` strips it from bodies and fails a PR whose commits carry it. All three read `scripts/attribution/patterns.txt`.
 
 ## Contributing
 
