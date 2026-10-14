@@ -66,6 +66,10 @@ O servidor fala MCP por stdin/stdout. Para exercitar as tools, ligue-o a um clie
 
 O que já foi verificado assim está em [SPEC.md, seção 8.2](SPEC.md#82-prova-de-conceito-verificado-em-2026-10-13).
 
+## CI
+
+`.github/workflows/ci.yml` roda `gofmt`, `go vet`, `go test` e `go build` em Linux, Windows e macOS a cada push na `main` e em cada PR. Enquanto o `go.sum` não estiver no repositório, o CI gera o arquivo com `go mod tidy` antes dos testes.
+
 ## Fluxo de contribuição
 
 1. Crie uma branch a partir da `main`.
