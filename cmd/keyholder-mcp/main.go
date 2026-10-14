@@ -150,7 +150,7 @@ func main() {
 	mcp.AddTool(server, &mcp.Tool{
 		Name: "keyholder_executar",
 		Description: "Executa um comando permitido, sem shell, trocando {{vault://caminho/CHAVE}} pelo valor só no momento da execução. " +
-			"Exemplo: command=curl, args=[\"-H\", \"Authorization: Bearer {{vault://meu-projeto/dev/API_TOKEN}}\", \"https://api.exemplo.com/health\"]. " +
+			"Exemplo: command=curl, args=[\"-H\", \"Authorization: Bearer {{vault://meu-projeto/dev/API_TOKEN}}\", \"https://api.example.com/health\"]. " +
 			"A saída volta com os valores mascarados. O mascaramento só pega o valor exato: não codifique nem imprima segredos de propósito.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in runner.Request) (*mcp.CallToolResult, runner.Result, error) {
 		if store == nil {

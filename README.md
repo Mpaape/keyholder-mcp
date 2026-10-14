@@ -10,7 +10,7 @@ Cofre local de credenciais para agentes de IA. O agente descobre **nomes** de cr
 2. Você emite fora do chat um token **embrulhado** (uso único) com prazo e política mínima.
 3. O `keyholder-mcp` desembrulha esse token ao iniciar e o guarda só em memória.
 4. O agente lista as referências (`vault://meu-projeto/dev/API_TOKEN`) e pede execuções com placeholders:
-   `curl -H "Authorization: Bearer {{vault://meu-projeto/dev/API_TOKEN}}" https://api.exemplo.com/health`
+   `curl -H "Authorization: Bearer {{vault://meu-projeto/dev/API_TOKEN}}" https://api.example.com/health`
 5. O runner troca o placeholder pelo valor só na hora de executar, sem shell, e devolve a saída com o valor mascarado.
 6. Quando o token expira, as tools falham com uma mensagem clara e você renova fora do chat.
 
@@ -90,6 +90,16 @@ O token embrulhado fica no arquivo de configuração, mas deixa de valer assim q
 - `BAO_*`, `VAULT_*` e `KEYHOLDER_*` são removidas do ambiente do processo filho, então o token do cofre não chega ao comando.
 - Não protege contra um agente hostil que roda com o seu usuário do sistema.
 
+## Documentação
+
+| Documento | Conteúdo |
+| --- | --- |
+| [docs/SPEC.md](docs/SPEC.md) | Especificação: requisitos, arquitetura, fluxo de acesso, modelo de ameaças, decisões |
+| [docs/DESENVOLVIMENTO.md](docs/DESENVOLVIMENTO.md) | Compilar, testar, estrutura dos pacotes, teste com OpenBao dev, fluxo de contribuição |
+| [docs/REVISAO.md](docs/REVISAO.md) | Revisão com AurumCode: workflow, secrets, gate, todas as regras, exceções |
+| [SECURITY.md](SECURITY.md) | Como reportar uma vulnerabilidade |
+| [CHANGELOG.md](CHANGELOG.md) | Mudanças por versão |
+
 ## Revisão de código
 
 Cada pull request é revisado pelo [AurumCode](https://github.com/Mpaape/AurumCode) (`.github/workflows/aurumcode.yml`), com as regras em `.aurumcode/skills/`:
@@ -100,7 +110,7 @@ Cada pull request é revisado pelo [AurumCode](https://github.com/Mpaape/AurumCo
 | `review` | Erros, testes, contexto, stdout reservado ao MCP, portabilidade |
 | `solid` | SOLID aplicado aos pacotes Go do projeto |
 
-O check reprova com achado de severidade `error`. Também rodam Semgrep (SAST) e gitleaks (segredos no histórico da PR). Para funcionar, configure em Settings → Secrets and variables → Actions os secrets `LLM_API_KEY` e `LLM_BASE_URL` e, se preciso, as variáveis `LLM_MODEL` e `LLM_PROVIDER` ([provedores](https://github.com/Mpaape/AurumCode/blob/v2.0.0/docs/provedores.md)).
+O check reprova com achado de severidade `error`. Também rodam Semgrep (SAST) e gitleaks (segredos no histórico da PR). Secrets, variáveis e a lista completa de regras: [docs/REVISAO.md](docs/REVISAO.md).
 
 ## Licença
 

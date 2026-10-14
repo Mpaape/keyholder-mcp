@@ -76,7 +76,7 @@ Nomes e ações, nunca valores. Não existe tool que devolva o valor em claro.
 Exemplo de chamada planejada pelo agente:
 
 ```
-curl -H 'Authorization: Bearer {{vault://meu-projeto/dev/API_TOKEN}}' https://api.exemplo.com/health
+curl -H 'Authorization: Bearer {{vault://meu-projeto/dev/API_TOKEN}}' https://api.example.com/health
 ```
 
 ## 7. Modos de execução e garantias
