@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+
+- Two branches only: `dev` takes every change, `main` changes only through a pull request from `dev`. Rulesets versioned in `.github/rulesets/`; CI and the docs build also run on `dev`.
+
 ## 0.2.0 - 2026-10-14
 
 ### Added

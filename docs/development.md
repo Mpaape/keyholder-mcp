@@ -83,9 +83,11 @@ claude                                         # approve the project server "aur
 
 Without a working provider the gate answers `inconclusive`, never `pass`.
 
-## Releasing
+## Branches and releases
 
-Move the `## Unreleased` entries under a new `## X.Y.Z - date` heading in `CHANGELOG.md` and merge it. `release.yml` sees a version without a release, creates the tag `vX.Y.Z` on that commit and publishes the binaries. Pushing a `vX.Y.Z` tag yourself works too.
+Two branches only: `dev`, where every change lands, and `main`, what is released. `main` changes only through a pull request from `dev`, merged with a merge commit after its checks pass; then `dev` is fast-forwarded to `main`. Contributors open pull requests into `dev` from a fork. Details and the exact steps: [CONTRIBUTING.md](https://github.com/Mpaape/keyholder-mcp/blob/main/CONTRIBUTING.md#branches).
+
+To release, move the `## Unreleased` entries under `## X.Y.Z - date` in `CHANGELOG.md` on `dev` and ship it to `main`. `release.yml` sees a version without a release, creates the tag `vX.Y.Z` on that commit and publishes the binaries.
 
 ## No AI attribution
 
@@ -99,9 +101,6 @@ Claude Code picks up `.claude/settings.json`, which turns its attribution off an
 
 ## Contributing
 
-1. Branch from `main`.
-2. Open a pull request. AurumCode reviews it; the `aurumcode/policy-gate` check must pass.
-3. A change to a tool, a variable or the access flow updates `README.md`, the docs and their Portuguese versions in the same PR.
-4. Add a line to `CHANGELOG.md` under `## Unreleased`.
+See [CONTRIBUTING.md](https://github.com/Mpaape/keyholder-mcp/blob/main/CONTRIBUTING.md): branch from `dev`, test, update both languages of the docs and the CHANGELOG, open the pull request into `dev`.
 
 English is the primary language of the repository: code, comments, messages and commits. Portuguese is the second language of the documentation.
