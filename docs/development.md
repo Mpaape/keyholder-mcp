@@ -68,7 +68,7 @@ Tutorial pages include the files in `demo/tutorials/*/expected/` at build time, 
 | --- | --- |
 | `ci.yml` | `gofmt`, `go vet`, `go test`, `go build` on Linux, Windows and macOS; every tutorial and its `--check` on Linux |
 | `aurumcode.yml` | AI code review with the project rules, gitleaks and Semgrep |
-| `release.yml` | On a `v*` tag: tests, builds the binaries for six platforms, publishes them with `SHA256SUMS` and the CHANGELOG section |
+| `release.yml` | When `main` gets a CHANGELOG version with no release yet (or on a `v*` tag): tests, builds the binaries for six platforms, publishes them with `SHA256SUMS` and the CHANGELOG section |
 | `docs.yml` | Builds the site with `--strict` on every PR; publishes it to GitHub Pages from `main` |
 | `attribution.yml` | Removes AI attribution from PR, issue and comment bodies; fails a PR whose commits carry it |
 
@@ -82,6 +82,10 @@ claude                                         # approve the project server "aur
 ```
 
 Without a working provider the gate answers `inconclusive`, never `pass`.
+
+## Releasing
+
+Move the `## Unreleased` entries under a new `## X.Y.Z - date` heading in `CHANGELOG.md` and merge it. `release.yml` sees a version without a release, creates the tag `vX.Y.Z` on that commit and publishes the binaries. Pushing a `vX.Y.Z` tag yourself works too.
 
 ## No AI attribution
 

@@ -68,7 +68,7 @@ As páginas de tutorial incluem os arquivos de `demo/tutorials/*/expected/` na g
 | --- | --- |
 | `ci.yml` | `gofmt`, `go vet`, `go test`, `go build` em Linux, Windows e macOS; cada tutorial e seu `--check` no Linux |
 | `aurumcode.yml` | Revisão de código por IA com as regras do projeto, gitleaks e Semgrep |
-| `release.yml` | Numa tag `v*`: testa, compila os binários para seis plataformas e publica com `SHA256SUMS` e a seção do CHANGELOG |
+| `release.yml` | Quando a `main` recebe uma versão do CHANGELOG ainda sem release (ou numa tag `v*`): testa, compila os binários para seis plataformas e publica com `SHA256SUMS` e a seção do CHANGELOG |
 | `docs.yml` | Gera o site com `--strict` em todo PR; publica no GitHub Pages a partir do `main` |
 | `attribution.yml` | Remove atribuição de IA de PRs, issues e comentários; reprova um PR cujos commits a tragam |
 
@@ -82,6 +82,10 @@ claude                                         # aprove o servidor de projeto "a
 ```
 
 Sem provedor funcionando o gate responde `inconclusive`, nunca `pass`.
+
+## Publicar uma versão
+
+Mova as entradas de `## Unreleased` para um novo título `## X.Y.Z - data` no `CHANGELOG.md` e faça o merge. O `release.yml` vê uma versão sem release, cria a tag `vX.Y.Z` nesse commit e publica os binários. Enviar você mesmo uma tag `vX.Y.Z` também funciona.
 
 ## Sem atribuição de IA
 

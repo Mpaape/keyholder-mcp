@@ -1,31 +1,65 @@
 name: Release
 
-# Builds keyholder-mcp and khcall for Linux, macOS and Windows (amd64 and
-# arm64) on a version tag and publishes them, with SHA256SUMS, as a GitHub
-# release whose notes are the tag's section of CHANGELOG.md.
+# Publishes keyholder-mcp and khcall for Linux, macOS and Windows (amd64 and
+# arm64), with SHA256SUMS, as a GitHub release whose notes are the version's
+# section of CHANGELOG.md. Two ways in:
+#
+# - push a tag vX.Y.Z: releases that tag;
+# - merge to main a CHANGELOG.md whose newest "## X.Y.Z" section has no
+#   release yet: creates the tag vX.Y.Z at that commit and releases it.
+#
+# Path filters are not evaluated for tag pushes, so a tag always runs.
 
 on:
   push:
+    branches: [main]
     tags: ['v*.*.*']
+    paths: [CHANGELOG.md]
 
 permissions:
   contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
-      - uses: actions/setup-go@v7
+      - name: Version
+        id: v
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          if [ "${GITHUB_REF_TYPE}" = tag ]; then
+            tag="${GITHUB_REF_NAME}"
+          else
+            ver="$(grep -m1 -oE '^## [0-9]+\.[0-9]+\.[0-9]+' CHANGELOG.md | cut -d' ' -f2 || true)"
+            if [ -z "$ver" ]; then echo "no released version in CHANGELOG.md"; echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0; fi
+            tag="v${ver}"
+            if gh release view "$tag" -R "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+              echo "$tag is already released"; echo "skip=true" >> "$GITHUB_OUTPUT"; exit 0
+            fi
+          fi
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "skip=false" >> "$GITHUB_OUTPUT"
+      - if: steps.v.outputs.skip != 'true'
+        uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
       - name: Verify modules
+        if: steps.v.outputs.skip != 'true'
         run: go mod verify
       - name: Test
+        if: steps.v.outputs.skip != 'true'
         run: go test ./...
       - name: Build
+        if: steps.v.outputs.skip != 'true'
         env:
-          TAG: ${{ github.ref_name }}
+          TAG: ${{ steps.v.outputs.tag }}
         run: |
           set -euo pipefail
           version="${TAG#v}"
@@ -49,8 +83,9 @@ jobs:
           (cd dist && sha256sum * > SHA256SUMS)
           cat dist/SHA256SUMS
       - name: Release notes from CHANGELOG.md
+        if: steps.v.outputs.skip != 'true'
         env:
-          TAG: ${{ github.ref_name }}
+          TAG: ${{ steps.v.outputs.tag }}
         run: |
           set -euo pipefail
           awk -v v="${TAG#v}" '
@@ -60,7 +95,14 @@ jobs:
           ' CHANGELOG.md > notes.md
           [ -s notes.md ] || { echo "::error::no section for ${TAG#v} in CHANGELOG.md"; exit 1; }
       - name: Publish
+        if: steps.v.outputs.skip != 'true'
         env:
           GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.ref_name }}
-        run: gh release create "$TAG" dist/* --title "$TAG" --notes-file notes.md --verify-tag
+          TAG: ${{ steps.v.outputs.tag }}
+        run: |
+          set -euo pipefail
+          if [ "${GITHUB_REF_TYPE}" = tag ]; then
+            gh release create "$TAG" dist/* --title "$TAG" --notes-file notes.md --verify-tag
+          else
+            gh release create "$TAG" dist/* --title "$TAG" --notes-file notes.md --target "$GITHUB_SHA"
+          fi

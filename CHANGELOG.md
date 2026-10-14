@@ -2,15 +2,12 @@
 
 ## Unreleased
 
-### Added
-
-- Documentation home redesigned around one recorded request seen by the API and by the agent.
-- "How it compares" page (EN and pt-BR) against mcp-vault, openbao-mcp and vault-mcp-server, with sources; linked from the README and the security model.
-
 ## 0.1.0 - 2026-10-14
 
 ### Added
 
+- Documentation home built around one recorded request seen by the API and by the agent.
+- "How it compares" page (EN and pt-BR) against mcp-vault, openbao-mcp and vault-mcp-server, with sources; linked from the README and the security model.
 - Documentation site (MkDocs Material, published to GitHub Pages) in English, with a Portuguese version: getting started, MCP clients, configuration, Windows and WSL, architecture, security model, specification, development and code review.
 - Executable tutorials under `demo/tutorials/` (quickstart, temporary access, guardrails, masking), run against a real OpenBao dev server; CI fails when an output drifts from `expected/`.
 - `khcall`, a minimal MCP client for debugging and for the tutorials.
