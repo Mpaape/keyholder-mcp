@@ -51,7 +51,7 @@ Provider profiles and URLs: [AurumCode providers](https://github.com/Mpaape/Auru
 | `gate.inconclusive: block` | A review that did not finish (provider down, scanner failed) never passes |
 | `gitleaks`, `required: true` | Secrets in any commit of the PR, not only in the final tree |
 | `semgrep` | SAST; fails only on lines the PR added |
-| `govet` | Off until `go.sum` is in the repository |
+| `govet` | `go vet` on the touched packages; fails on a warning |
 
 To make the check block merges, after the first PR: Settings → Branches → rule for `main` → *Require status checks to pass before merging* → `aurumcode/policy-gate`.
 

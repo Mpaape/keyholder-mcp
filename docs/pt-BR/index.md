@@ -63,4 +63,4 @@ O Keyholder é honesto sobre os próprios limites, listados no [modelo de segura
 
 ## Estado
 
-Prova de conceito. O servidor, o runner e o cliente do OpenBao funcionam de ponta a ponta, e todo tutorial deste site é uma execução real, reconferida, contra o OpenBao 2.7.1. Credenciais dinâmicas de AWS e GCP, `keyholder_request_access` e SSH vêm a seguir; veja a [especificação](spec.md#11-roteiro).
+Versão 0.1.0, a primeira [release](https://github.com/Mpaape/keyholder-mcp/releases). O servidor, o runner e o cliente do OpenBao funcionam de ponta a ponta, e todo tutorial deste site é uma execução real, reconferida, contra o OpenBao 2.7.1. Credenciais dinâmicas de AWS e GCP, `keyholder_request_access` e SSH vêm a seguir; veja a [especificação](spec.md#11-roteiro).

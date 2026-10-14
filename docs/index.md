@@ -63,4 +63,4 @@ Keyholder is honest about its limits, and the [security model](security.md) list
 
 ## Status
 
-Proof of concept. The server, the runner and the OpenBao client work end to end and every tutorial on this site is a real, re-checked run against OpenBao 2.7.1. Dynamic AWS and GCP credentials, `keyholder_request_access` and SSH come next; see the [specification](spec.md#11-roadmap).
+Version 0.1.0, the first [release](https://github.com/Mpaape/keyholder-mcp/releases). The server, the runner and the OpenBao client work end to end and every tutorial on this site is a real, re-checked run against OpenBao 2.7.1. Dynamic AWS and GCP credentials, `keyholder_request_access` and SSH come next; see the [specification](spec.md#11-roadmap).

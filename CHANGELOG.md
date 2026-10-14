@@ -2,6 +2,8 @@
 
 ## Unreleased
 
+## 0.1.0 - 2026-10-14
+
 ### Added
 
 - Documentation site (MkDocs Material, published to GitHub Pages) in English, with a Portuguese version: getting started, MCP clients, configuration, Windows and WSL, architecture, security model, specification, development and code review.
@@ -9,6 +11,8 @@
 - `khcall`, a minimal MCP client for debugging and for the tutorials.
 - `README.pt-BR.md`, `CONTRIBUTING.md`.
 - `.mcp.json` with the AurumCode gate (`aurumcode mcp`) for Claude Code.
+- Release workflow: `keyholder-mcp` and `khcall` for Linux, macOS and Windows (amd64, arm64) with `SHA256SUMS`, on each version tag.
+- `go.sum` committed; CI runs `go mod verify`, and the AurumCode review runs `go vet`.
 - No-AI-attribution guard: `.githooks/commit-msg`, a Claude Code hook and the `attribution.yml` workflow, sharing `scripts/attribution/patterns.txt`.
 - CI with `gofmt`, `go vet`, `go test` and `go build` on Linux, Windows and macOS.
 - MCP server in Go with `keyholder_status`, `keyholder_list` and `keyholder_run`.

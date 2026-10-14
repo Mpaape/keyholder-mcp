@@ -6,16 +6,23 @@ This page takes you from zero to an agent calling an API with a credential it ne
 
 | Tool | Version | Why |
 | --- | --- | --- |
-| [Go](https://go.dev/dl/) | 1.25 or later | Build `keyholder-mcp` |
+| [Go](https://go.dev/dl/) | 1.25 or later | Build `keyholder-mcp` (not needed with a release binary) |
 | [OpenBao](https://openbao.org/docs/install/) (`bao`) | 2.7.x tested | The vault |
 | An MCP client | Claude Code, Cursor, Codex... | The agent |
 
-## 2. Build
+## 2. Install
+
+**Release binary.** Download the archive for your system from [Releases](https://github.com/Mpaape/keyholder-mcp/releases) (Linux, macOS and Windows, amd64 and arm64). Each holds `keyholder-mcp` and `khcall`. Check it before extracting:
+
+```bash
+sha256sum --check --ignore-missing SHA256SUMS
+```
+
+**From source:**
 
 ```bash
 git clone https://github.com/Mpaape/keyholder-mcp.git
 cd keyholder-mcp
-go mod tidy                # creates go.sum, checked against the Go checksum database
 go test ./...
 go build -o keyholder-mcp ./cmd/keyholder-mcp     # Windows: -o keyholder-mcp.exe
 go build -o khcall ./cmd/khcall                   # optional debugging client

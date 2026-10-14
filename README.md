@@ -15,7 +15,7 @@ agent asks:   curl -H "Authorization: Bearer {{vault://my-project/dev/API_TOKEN}
 agent reads:  api says: hello, caller with header Authorization: Bearer [hidden:vault://my-project/dev/API_TOKEN]
 ```
 
-> Status: proof of concept. Tested end to end against OpenBao 2.7.1; every tutorial is a real, re-checked run.
+> Status: v0.1.0, the first release. Tested end to end against OpenBao 2.7.1; every tutorial is a real, re-checked run.
 
 ## Tools
 
@@ -27,10 +27,10 @@ agent reads:  api says: hello, caller with header Authorization: Bearer [hidden:
 
 ## Quick start
 
-Requires Go 1.25+ and [OpenBao](https://openbao.org/docs/install/).
+Download `keyholder-mcp` (and the `khcall` debugging client) for Linux, macOS or Windows from [Releases](https://github.com/Mpaape/keyholder-mcp/releases) and check it against `SHA256SUMS`, or build it with Go 1.25+. You also need [OpenBao](https://openbao.org/docs/install/).
 
 ```bash
-go mod tidy && go build -o keyholder-mcp ./cmd/keyholder-mcp
+go build -o keyholder-mcp ./cmd/keyholder-mcp     # or use a release binary
 
 bao server -dev -dev-root-token-id=root-dev        # in-memory, never with real secrets
 

@@ -29,7 +29,6 @@ O `bao server -dev` serve para experimentar: dados em memória, `127.0.0.1:8200`
 ## Compilar no Windows
 
 ```powershell
-go mod tidy
 go test ./...
 go build -o keyholder-mcp.exe ./cmd/keyholder-mcp
 ```

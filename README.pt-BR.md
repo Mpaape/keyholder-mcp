@@ -15,7 +15,7 @@ o agente pede: curl -H "Authorization: Bearer {{vault://my-project/dev/API_TOKEN
 o agente lê:   api says: hello, caller with header Authorization: Bearer [hidden:vault://my-project/dev/API_TOKEN]
 ```
 
-> Situação: prova de conceito. Testado de ponta a ponta contra o OpenBao 2.7.1; cada tutorial é uma execução real e reconferida.
+> Situação: v0.1.0, a primeira release. Testado de ponta a ponta contra o OpenBao 2.7.1; cada tutorial é uma execução real e reconferida.
 
 ## Tools
 
@@ -27,10 +27,10 @@ o agente lê:   api says: hello, caller with header Authorization: Bearer [hidde
 
 ## Início rápido
 
-Requer Go 1.25+ e o [OpenBao](https://openbao.org/docs/install/).
+Baixe o `keyholder-mcp` (e o cliente de depuração `khcall`) para Linux, macOS ou Windows em [Releases](https://github.com/Mpaape/keyholder-mcp/releases) e confira com o `SHA256SUMS`, ou compile com Go 1.25+. Também é preciso o [OpenBao](https://openbao.org/docs/install/).
 
 ```bash
-go mod tidy && go build -o keyholder-mcp ./cmd/keyholder-mcp
+go build -o keyholder-mcp ./cmd/keyholder-mcp     # ou use o binário de uma release
 
 bao server -dev -dev-root-token-id=root-dev        # em memória, nunca com segredos reais
 

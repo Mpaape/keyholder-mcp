@@ -116,7 +116,7 @@ Decided: OpenBao as the vault; Go as the language; MIT license; OpenBao inside W
 
 ## 11. Roadmap
 
-1. ~~Proof of concept and minimal MCP~~: done.
+1. ~~Proof of concept and minimal MCP~~: done, released as v0.1.0.
 2. **Dynamic credentials:** OpenBao AWS and GCP plugins mapped to environment variables. Criterion: the credential expires and is revoked.
 3. **`keyholder_request_access`:** the agent asks, the human approves with TOTP, a new wrapped token reaches the server.
 4. **Persistent server guide:** storage, TLS and unseal.

@@ -11,10 +11,10 @@
 
 ## First build
 
-The repository does not ship `go.sum` yet. Create it the first time; Go checks every module against the checksum database:
+`go.sum` is committed; `go mod verify` checks the downloaded modules against it:
 
 ```bash
-go mod tidy
+go mod verify
 go test ./...
 go vet ./...
 gofmt -l .
@@ -68,6 +68,7 @@ Tutorial pages include the files in `demo/tutorials/*/expected/` at build time, 
 | --- | --- |
 | `ci.yml` | `gofmt`, `go vet`, `go test`, `go build` on Linux, Windows and macOS; every tutorial and its `--check` on Linux |
 | `aurumcode.yml` | AI code review with the project rules, gitleaks and Semgrep |
+| `release.yml` | On a `v*` tag: tests, builds the binaries for six platforms, publishes them with `SHA256SUMS` and the CHANGELOG section |
 | `docs.yml` | Builds the site with `--strict` on every PR; publishes it to GitHub Pages from `main` |
 | `attribution.yml` | Removes AI attribution from PR, issue and comment bodies; fails a PR whose commits carry it |
 

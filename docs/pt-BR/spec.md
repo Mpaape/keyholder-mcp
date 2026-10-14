@@ -116,7 +116,7 @@ Decidido: OpenBao como cofre; Go como linguagem; licença MIT; OpenBao dentro do
 
 ## 11. Roteiro
 
-1. ~~Prova de conceito e MCP mínimo~~: feito.
+1. ~~Prova de conceito e MCP mínimo~~: feito, publicado como v0.1.0.
 2. **Credenciais dinâmicas:** plugins de AWS e GCP do OpenBao mapeados para variáveis de ambiente. Critério: a credencial expira e é revogada.
 3. **`keyholder_request_access`:** o agente pede, o humano aprova com TOTP, um novo token embrulhado chega ao servidor.
 4. **Guia de servidor persistente:** armazenamento, TLS e unseal.

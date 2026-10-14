@@ -21,10 +21,8 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
-      # go.sum is not in the repository yet: tidy creates it here, checked
-      # against the Go checksum database. Drop this step once it is committed.
-      - name: go mod tidy
-        run: go mod tidy
+      - name: go mod verify
+        run: go mod verify
       - name: gofmt
         if: runner.os != 'Windows'
         run: test -z "$(gofmt -l .)" || { gofmt -l .; exit 1; }
@@ -40,22 +38,6 @@ jobs:
           exit 1
       - name: go build
         run: go build -o keyholder-mcp-bin ./cmd/keyholder-mcp
-      # Until go.sum is committed, publish the one tidy just verified against
-      # the Go checksum database, so it can be reviewed and committed.
-      - name: Report generated go.sum
-        if: runner.os == 'Linux' && hashFiles('go.sum') != '' 
-        shell: bash
-        run: |
-          if git ls-files --error-unmatch go.sum >/dev/null 2>&1; then exit 0; fi
-          # Annotations are cut at 4 KiB: publish 30 lines per notice.
-          total="$(wc -l < go.sum)"
-          split -l 30 -d go.sum part.
-          n=0
-          for f in part.*; do
-            n=$((n+1))
-            msg="$(sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g' "$f")"
-            echo "::notice title=go.sum part ${n} (${total} lines)::${msg}"
-          done
 
   # Runs every executable tutorial against a real OpenBao dev server and
   # fails when an output drifts from the recorded expected/ files.
@@ -70,8 +52,6 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version-file: go.mod
-      - name: go mod tidy
-        run: go mod tidy
       - name: Install OpenBao (checksum verified)
         run: |
           f="openbao_${BAO_VERSION}_linux_amd64.tar.gz"

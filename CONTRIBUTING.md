@@ -5,7 +5,7 @@ Thanks for helping. English is the primary language of this repository: code, co
 ## Setup
 
 ```bash
-go mod tidy          # the repository does not ship go.sum yet
+go mod verify
 go test ./...
 go vet ./...
 gofmt -l .

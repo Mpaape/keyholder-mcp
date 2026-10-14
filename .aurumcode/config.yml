@@ -17,10 +17,8 @@ quality_gates:
     - engine: gitleaks    # secrets anywhere in the PR's commits
       required: true
     - engine: semgrep     # SAST: fails only on lines the PR added
-    # go vet stays off until go.sum is in the repository: without it the
-    # module download fails and the gate is inconclusive.
-    # - engine: govet
-    #   fail_on: warning
+    - engine: govet       # go vet on the packages the PR touches
+      fail_on: warning
 
 deliberation:
   enabled: true           # the model may read repository files, within limits

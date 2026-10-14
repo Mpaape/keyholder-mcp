@@ -51,7 +51,7 @@ Perfis e URLs de provedores: [provedores do AurumCode](https://github.com/Mpaape
 | `gate.inconclusive: block` | Uma revisão que não terminou (provedor fora, scanner falhou) nunca passa |
 | `gitleaks`, `required: true` | Segredos em qualquer commit do PR, não só na árvore final |
 | `semgrep` | SAST; reprova só em linhas que o PR acrescentou |
-| `govet` | Desligado até o `go.sum` entrar no repositório |
+| `govet` | `go vet` nos pacotes alterados; reprova com um aviso |
 
 Para o check bloquear merges, depois do primeiro PR: Settings → Branches → regra do `main` → *Require status checks to pass before merging* → `aurumcode/policy-gate`.
 

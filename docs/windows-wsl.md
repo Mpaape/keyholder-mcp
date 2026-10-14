@@ -29,7 +29,6 @@ fsutil behavior query encryptpagingfile
 ## Building on Windows
 
 ```powershell
-go mod tidy
 go test ./...
 go build -o keyholder-mcp.exe ./cmd/keyholder-mcp
 ```
