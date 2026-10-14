@@ -57,7 +57,7 @@ To make the check block merges, after the first PR: Settings → Branches → ru
 
 ## Project rules
 
-Citable id: `<skill>#<slug of the title>`, for example `security#sec-001-a-secret-value-never-goes-back-to-the-agent`. Rules marked "Yes" have `severity: error` and block the merge; the others are warnings.
+Citable id: `<skill>#<slug of the heading>`, for example `security#sec-001`. Headings carry only the id and the title opens the body: AurumCode v2.0.0 puts every rule id in the prompt under a fixed 512-token budget and refuses to run when it overflows, so long ids would stop the review. Rules marked "Yes" have `severity: error` and block the merge; the others are warnings.
 
 ### `security` — paths ["**"]
 

@@ -57,7 +57,7 @@ Para o check bloquear merges, depois do primeiro PR: Settings → Branches → r
 
 ## Regras do projeto
 
-Id citável: `<skill>#<slug do título>`, por exemplo `security#sec-001-a-secret-value-never-goes-back-to-the-agent`. As regras estão em inglês, a língua principal do repositório. As marcadas "Sim" têm `severity: error` e bloqueiam o merge; as outras são avisos.
+Id citável: `<skill>#<slug do título da seção>`, por exemplo `security#sec-001`. O título da seção traz só o id, e o nome da regra abre o corpo: o AurumCode v2.0.0 põe todos os ids de regra no prompt com um teto fixo de 512 tokens e se recusa a rodar quando ele estoura, então ids longos parariam a revisão. As regras estão em inglês, a língua principal do repositório. As marcadas "Sim" têm `severity: error` e bloqueiam o merge; as outras são avisos.
 
 ### `security` — caminhos ["**"]
 

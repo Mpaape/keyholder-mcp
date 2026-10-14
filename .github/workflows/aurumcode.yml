@@ -48,11 +48,26 @@ jobs:
       actions: read
       security-events: write
     steps:
-      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+      # A review that stops before writing its SARIF (for example on a
+      # configuration error) uploads no artifact: skip instead of failing.
+      - name: Check the SARIF artifact exists
+        id: sarif
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          NAME: aurumcode-sarif-${{ github.event.pull_request.number }}
+        run: |
+          n="$(gh api "repos/${REPOSITORY}/actions/runs/${RUN_ID}/artifacts" --jq "[.artifacts[] | select(.name == \"${NAME}\")] | length")"
+          if [ "${n}" -gt 0 ]; then echo "found=true" >> "$GITHUB_OUTPUT"; else
+            echo "::notice::the review wrote no SARIF; nothing to upload"; echo "found=false" >> "$GITHUB_OUTPUT"; fi
+      - if: steps.sarif.outputs.found == 'true'
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
         with:
           name: aurumcode-sarif-${{ github.event.pull_request.number }}
           path: .
-      - uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
+      - if: steps.sarif.outputs.found == 'true'
+        uses: github/codeql-action/upload-sarif@2892aa5e19bbd11bc0cff5427e3b750a04d9e3c2 # v4.38.2
         with:
           sarif_file: aurumcode-review.sarif
           category: aurumcode-policy-gate
@@ -73,12 +88,16 @@ jobs:
           REPOSITORY: ${{ github.repository }}
           RUN_ID: ${{ github.run_id }}
         run: |
-          set -euo pipefail
+          set -uo pipefail
           job="$(gh api "repos/${REPOSITORY}/actions/runs/${RUN_ID}/jobs" \
             --jq '.jobs[] | select(.name | endswith("Review pull request")) | .id' | head -n1)"
-          gh api "repos/${REPOSITORY}/actions/jobs/${job}/logs" > review.log
-          lines="$(grep -E 'aurumcode review:|##\[error\]|panic:' review.log | cut -d' ' -f2- | tail -n 40 || true)"
-          [ -n "$lines" ] || lines="no aurumcode lines found in the review log"
+          # The log of a finished job can take a few seconds to be served.
+          for _ in 1 2 3 4 5 6; do
+            gh api "repos/${REPOSITORY}/actions/jobs/${job}/logs" > review.log 2>/dev/null && break
+            sleep 10
+          done
+          lines="$(grep -E 'aurumcode review:|panic:' review.log 2>/dev/null | cut -d' ' -f2- | tail -n 40)"
+          [ -n "$lines" ] || lines="could not read the review log; open the job 'review / Review pull request'"
           msg="$(printf '%s' "$lines" | sed ':a;N;$!ba;s/%/%25/g;s/\r/%0D/g;s/\n/%0A/g')"
           echo "::error title=AurumCode review failed::${msg}"
 
