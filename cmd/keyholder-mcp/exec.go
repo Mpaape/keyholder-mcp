@@ -148,10 +148,11 @@ func guardedResolver(ctx context.Context, scope string, dyn map[string]bool, inn
 func buildExecEnv(base []string, specs []string, resolve ref.Resolver) ([]string, []ref.Ref, error) {
 	var used []ref.Ref
 	set := map[string]string{}
-	for _, s := range specs {
+	for i, s := range specs {
 		name, tmpl, ok := strings.Cut(s, "=")
 		if !ok || name == "" || strings.ContainsAny(name, " \t=") {
-			return nil, nil, fmt.Errorf("-e expects NAME=TEMPLATE, got %q", s)
+			// Never echo the spec: a malformed one may carry a literal secret.
+			return nil, nil, fmt.Errorf("-e entry %d: expects NAME=TEMPLATE with a plain NAME", i+1)
 		}
 		if isReservedName(name) {
 			return nil, nil, fmt.Errorf("%s is reserved", name)

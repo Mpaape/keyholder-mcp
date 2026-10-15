@@ -79,3 +79,14 @@ func TestBuildExecEnvRejects(t *testing.T) {
 		}
 	}
 }
+
+// A malformed spec may carry a literal secret; the error must not echo it.
+func TestBuildExecEnvErrorNeverEchoesSpec(t *testing.T) {
+	_, _, err := buildExecEnv(nil, []string{"A B=literal-secret"}, fakeResolve)
+	if err == nil {
+		t.Fatal("expected an error")
+	}
+	if strings.Contains(err.Error(), "literal-secret") || strings.Contains(err.Error(), "A B") {
+		t.Fatalf("error echoed the spec: %v", err)
+	}
+}

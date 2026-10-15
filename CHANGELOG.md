@@ -2,11 +2,13 @@
 
 ## Unreleased
 
+## 0.4.0 - 2026-10-15
+
 ### Added
 
 - `keyholder-mcp exec -e NAME='{{vault://path/KEY}}' -- command [args]`: launches a long-running process (a service on the host) with its secrets resolved from the vault at start and placed only in that process's environment. No `.env` file, no argument, no shell; `BAO_*`, `VAULT_*` and `KEYHOLDER_*` never reach the child; signals are forwarded and the exit code is the child's; dynamic leases are revoked on exit. Covers the host-service case: the key is not on disk and not in the agent's reach. Limit: visible to processes of the same OS user; passing it on to `docker run -e` puts it in `docker inspect`.
-
 - `deploy/ui-theme/`: a reverse proxy (nginx) that serves OpenBao's web UI with a Keyholder theme — black-and-white, line-based, the Keyholder mark in place of the OpenBao logo. Cosmetic only: it injects one same-origin stylesheet and serves the logo under `/kh/`, respects OpenBao's Content-Security-Policy, and changes no behaviour. `docker compose -f deploy/ui-theme/compose.yml up`.
+- Themed vault UI: hairline cards and inputs, monospace section labels, 2px black tab indicator.
 
 ## 0.3.0 - 2026-10-14
 
