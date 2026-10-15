@@ -127,4 +127,4 @@ Decidido: OpenBao como cofre; Go como linguagem; licença MIT; OpenBao dentro do
 3. **`keyholder_request_access`:** o agente pede, o humano aprova com TOTP, um novo token embrulhado chega ao servidor.
 4. ~~**Guia de servidor persistente:** armazenamento, TLS e unseal~~: feito na v0.3.0 ([cofre persistente](server.md)).
 5. **Adaptadores de SSH e navegador.**
-6. **Upstream:** propor "executar com variáveis injetadas" e acesso temporário a um projeto existente.
+6. ~~**Upstream:** propor "executar com variáveis injetadas"~~: entregue como `keyholder-mcp exec` ([configuração](configuration.md#exec-um-servico-com-os-segredos-no-ambiente)); acesso temporário a um projeto existente continua.

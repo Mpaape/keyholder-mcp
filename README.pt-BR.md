@@ -15,7 +15,7 @@ o agente pede: curl -H "Authorization: Bearer {{vault://my-project/dev/API_TOKEN
 o agente lê:   api says: hello, caller with header Authorization: Bearer [hidden:vault://my-project/dev/API_TOKEN]
 ```
 
-> Situação: v0.3.0. Testado de ponta a ponta contra o OpenBao 2.7.1; cada tutorial é uma execução real e reconferida.
+> Situação: v0.4.0. Testado de ponta a ponta contra o OpenBao 2.7.1; cada tutorial é uma execução real e reconferida.
 
 ## Tools
 

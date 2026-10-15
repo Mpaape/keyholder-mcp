@@ -150,3 +150,15 @@ khcall [-server keyholder-mcp] <tool> ['<json arguments>'] [+wait=<duration>] [<
 ```
 
 All calls run in one session (one server, one unwrap). `+wait=7s` pauses between calls. Exit status: 0 when every call succeeds, 1 when a tool reports an error, 2 on a usage or protocol error.
+
+## `exec`: a service with secrets in its environment
+
+For a long-running process on the host (an API server, a model server) that needs a key, `exec` replaces the `.env` file:
+
+```bash
+keyholder-mcp exec -e UPSTREAM_BEARER='{{vault://my-project/prod/API_KEY}}' -- ./server --port 8080
+```
+
+`UPSTREAM_BEARER` is whatever variable your service reads. The template is resolved from the vault when the process starts and goes to its environment only. Nothing is written to disk, nothing passes through an argument or a shell, and `BAO_*`, `VAULT_*`, `KEYHOLDER_*` never reach the child. Signals are forwarded; the exit code is the child's; `bao://` leases are revoked when it exits. The same `BAO_ADDR`, `BAO_WRAPPING_TOKEN` (or `BAO_TOKEN`), `KEYHOLDER_SCOPE` and `KEYHOLDER_DYNAMIC` apply.
+
+Limits, stated plainly: the value lives in the process's memory and is readable by any process of the same OS user (for example through `/proc`). Passing it on to `docker run -e` puts it in `docker inspect`; run the service natively, or give the container the token file mechanism instead.
