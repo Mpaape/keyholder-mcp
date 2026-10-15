@@ -93,11 +93,13 @@ Contra o `bao server -dev` 2.7.1, gravada e reconferida pelos [tutoriais](tutori
 
 - Clientes MCP reais, com o binário da release v0.2.0: Claude Code (`claude -p`) e Codex (`codex exec`) chamaram `keyholder_status`, `keyholder_list` e `keyholder_run`; a API recebeu o token guardado, o agente o leu mascarado, o valor não apareceu em nenhuma das transcrições, e `cat` foi recusado por não estar permitido. Executado à mão em 2026-10-14; os clientes precisam das próprias credenciais de modelo, então isso não roda no CI.
 
+- Um servidor persistente a partir de [`deploy/server.hcl`](https://github.com/Mpaape/keyholder-mcp/blob/main/deploy/server.hcl): armazenamento Raft, TLS, init, unseal Shamir, token root revogado depois da configuração, Keyholder por TLS com `BAO_CACERT`, selado de novo depois de um reinício sem consumir o token embrulhado, backup por snapshot ([tutorial](tutorials/server.md), no CI).
+
 Ainda não testado: o plugin do GCP e contas AWS reais.
 
 ## 9. Decisões em aberto
 
-1. Como fazer o unseal depois de reiniciar: Shamir manual ou auto unseal.
+1. ~~Como fazer o unseal depois de reiniciar: Shamir manual ou auto unseal.~~ Decidido: Shamir manual, 2 de 3 chaves, para o cofre de uma pessoa que é o alvo do Keyholder; o auto unseal fica documentado como opção, sem teste ([cofre persistente](server.md)).
 2. Segundo fator: TOTP embutido ou serviço externo.
 3. Credencial do GCP: chave JSON de service account ou token OAuth dinâmico.
 4. Escrita do agente no cofre: um caminho dedicado, ou nenhuma.
@@ -123,6 +125,6 @@ Decidido: OpenBao como cofre; Go como linguagem; licença MIT; OpenBao dentro do
 1. ~~Prova de conceito e MCP mínimo~~: feito, publicado como v0.1.0.
 2. ~~**Credenciais dinâmicas:** plugins de AWS e GCP do OpenBao mapeados para variáveis de ambiente~~: feito na v0.2.0. Credenciais AWS `iam_user` são revogadas depois da execução; STS e tokens do GCP expiram sozinhos.
 3. **`keyholder_request_access`:** o agente pede, o humano aprova com TOTP, um novo token embrulhado chega ao servidor.
-4. **Guia de servidor persistente:** armazenamento, TLS e unseal.
+4. ~~**Guia de servidor persistente:** armazenamento, TLS e unseal~~: feito na v0.3.0 ([cofre persistente](server.md)).
 5. **Adaptadores de SSH e navegador.**
 6. **Upstream:** propor "executar com variáveis injetadas" e acesso temporário a um projeto existente.

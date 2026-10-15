@@ -15,7 +15,7 @@ agent asks:   curl -H "Authorization: Bearer {{vault://my-project/dev/API_TOKEN}
 agent reads:  api says: hello, caller with header Authorization: Bearer [hidden:vault://my-project/dev/API_TOKEN]
 ```
 
-> Status: v0.2.0. Tested end to end against OpenBao 2.7.1; every tutorial is a real, re-checked run.
+> Status: v0.3.0. Tested end to end against OpenBao 2.7.1; every tutorial is a real, re-checked run.
 
 ## Tools
 
@@ -32,7 +32,7 @@ Download `keyholder-mcp` (and the `khcall` debugging client) for Linux, macOS or
 ```bash
 go build -o keyholder-mcp ./cmd/keyholder-mcp     # or use a release binary
 
-bao server -dev -dev-root-token-id=root-dev        # in-memory, never with real secrets
+bao server -dev -dev-root-token-id=root-dev        # in-memory, never with real secrets: see Persistent vault
 
 export BAO_ADDR=http://127.0.0.1:8200 BAO_TOKEN=root-dev
 bao kv put -mount=secret my-project/dev API_TOKEN=your-api-token
@@ -65,7 +65,8 @@ Other MCP servers for OpenBao and Vault ([mcp-vault](https://github.com/Cloud-Te
 | Page | Content |
 | --- | --- |
 | [Getting started](https://mpaape.github.io/keyholder-mcp/getting-started/) | From zero to an agent using a credential |
-| [Tutorials](https://mpaape.github.io/keyholder-mcp/tutorials/) | Quickstart, temporary access, guardrails, masking; real outputs |
+| [Tutorials](https://mpaape.github.io/keyholder-mcp/tutorials/) | Quickstart, temporary access, guardrails, masking, cloud, persistent vault; real outputs |
+| [Persistent vault](https://mpaape.github.io/keyholder-mcp/server/) | OpenBao with data on disk, TLS and unsealing, for real secrets |
 | [Configuration](https://mpaape.github.io/keyholder-mcp/configuration/) | Every variable, tool and field |
 | [Security model](https://mpaape.github.io/keyholder-mcp/security/) | What is protected and what is not |
 | [Architecture](https://mpaape.github.io/keyholder-mcp/architecture/) | Components, access flow, packages |

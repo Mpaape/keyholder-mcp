@@ -39,7 +39,7 @@ For a first try, the OpenBao **dev** server is enough. It keeps everything in me
 bao server -dev -dev-root-token-id=root-dev
 ```
 
-For real use, run a persistent OpenBao with TLS and an unseal policy; see the [OpenBao documentation](https://openbao.org/docs/) and [Windows and WSL](windows-wsl.md) for where to run it.
+For real use, run a persistent OpenBao with TLS: [Persistent vault](server.md) sets one up step by step, and [Windows and WSL](windows-wsl.md) says where to run it.
 
 ## 4. Store a secret and a policy
 

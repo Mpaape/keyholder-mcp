@@ -5,9 +5,11 @@ package bao
 
 import (
 	"context"
+	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"net/url"
 	"os"
 	"sort"
 	"strings"
@@ -54,7 +56,7 @@ func Open(ctx context.Context, mount, scope string) (*Store, error) {
 		c.ClearToken()
 		sec, err := c.Logical().UnwrapWithContext(ctx, wrapped)
 		if err != nil {
-			return nil, fmt.Errorf("%w (already used or expired?)", cleanErr("unwrap token", err))
+			return nil, unwrapErr(ctx, c, err)
 		}
 		if sec == nil || sec.Auth == nil || sec.Auth.ClientToken == "" {
 			return nil, errors.New("the wrapped token does not contain a client token")
@@ -70,6 +72,41 @@ func Open(ctx context.Context, mount, scope string) (*Store, error) {
 		return nil, fmt.Errorf("no token: set %s (preferred) or %s", EnvWrappingToken, EnvToken)
 	}
 	return &Store{c: c, mount: strings.Trim(mount, "/"), scope: strings.Trim(scope, "/")}, nil
+}
+
+// ErrSealed means the vault answered but is sealed. The unwrap request was
+// refused before the wrapped token was used, so the same token still works.
+var ErrSealed = errors.New("the vault is sealed: an administrator must unseal it (bao operator unseal), then restart this server; the wrapped token was not used")
+
+// unwrapErr explains why a wrapped token could not be opened: a sealed vault,
+// a vault that cannot be reached (TLS, network), or a token the vault refused
+// (already used or expired).
+func unwrapErr(ctx context.Context, c *api.Client, err error) error {
+	var re *api.ResponseError
+	if !errors.As(err, &re) {
+		return fmt.Errorf("unwrap token: %w", unreachable(c.Address(), err))
+	}
+	if re.StatusCode == 503 {
+		if ss, serr := c.Sys().SealStatusWithContext(ctx); serr == nil && ss.Sealed {
+			return fmt.Errorf("unwrap token: %w", ErrSealed)
+		}
+	}
+	return fmt.Errorf("%w (already used or expired?)", cleanErr("unwrap token", err))
+}
+
+// unreachable reports a transport failure without the request URL, with a
+// hint when the vault's certificate is not trusted.
+func unreachable(addr string, err error) error {
+	var ue *url.Error
+	if errors.As(err, &ue) {
+		err = ue.Err
+	}
+	msg := fmt.Sprintf("cannot reach the vault at %s: %v", addr, err)
+	var ua x509.UnknownAuthorityError
+	if errors.As(err, &ua) {
+		msg += "; set BAO_CACERT to the CA certificate that signed the vault's certificate"
+	}
+	return errors.New(msg)
 }
 
 // ErrDenied means HTTP 403: the token expired or was revoked, or the policy
@@ -201,6 +238,23 @@ type Status struct {
 	Renewable    bool     `json:"token_renewable"`
 	Policies     []string `json:"token_policies"`
 	SessionError string   `json:"session_error,omitempty"`
+}
+
+// Probe reports the vault's state without a session, from the
+// unauthenticated sys/health, so keyholder_status can say whether the vault is
+// sealed even when the session could not be opened.
+func Probe(ctx context.Context, mount, scope string) Status {
+	st := Status{Mount: strings.Trim(mount, "/"), Scope: strings.Trim(scope, "/")}
+	c, err := api.NewClient(api.DefaultConfig())
+	if err != nil {
+		return st
+	}
+	c.ClearToken()
+	st.Addr = c.Address()
+	if h, err := c.Sys().HealthWithContext(ctx); err == nil {
+		st.Initialized, st.Sealed, st.Version = h.Initialized, h.Sealed, h.Version
+	}
+	return st
 }
 
 // Status queries sys/health and the token itself.

@@ -1,0 +1,6 @@
+# A snapshot of the whole vault, taken by the administrator
+
+$ bao operator raft snapshot save <backup file>
+exit_code=0
+
+Snapshot written: yes. It is encrypted with the vault's keys; it is restored with `bao operator raft snapshot restore` and unsealed with the same keys.

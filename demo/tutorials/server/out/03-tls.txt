@@ -1,0 +1,50 @@
+# Keyholder reaches the vault over TLS; without the CA it refuses to connect
+
+$ BAO_WRAPPING_TOKEN=<wrapped token> khcall keyholder_status keyholder_run '{"command":"curl","args":["-sS","-H","Authorization: Bearer {{vault://my-project/dev/API_TOKEN}}","http://127.0.0.1:18080/"]}'
+### keyholder_status
+{
+  "addr": "https://127.0.0.1:18200",
+  "initialized": true,
+  "kv_mount": "secret",
+  "scope": "my-project",
+  "sealed": false,
+  "server_version": "2.7.1",
+  "token_expire_time": "<time>",
+  "token_policies": [
+    "default",
+    "my-project-read"
+  ],
+  "token_renewable": true,
+  "token_ttl_seconds": <ttl>
+}
+### keyholder_run
+{
+  "exit_code": 0,
+  "refs_used": [
+    "vault://my-project/dev/API_TOKEN"
+  ],
+  "stderr": "",
+  "stdout": "api says: hello, caller with header Authorization: Bearer [hidden:vault://my-project/dev/API_TOKEN]\n"
+}
+--- stderr
+<timestamp> audit cmd="curl" refs=[vault://my-project/dev/API_TOKEN] exit=0 dur=<duration> status=ok
+exit_code=0
+
+Did the API receive the stored token? yes
+
+$ BAO_CACERT= BAO_WRAPPING_TOKEN=<wrapped token> khcall keyholder_status
+{
+  "addr": "https://127.0.0.1:18200",
+  "initialized": false,
+  "kv_mount": "secret",
+  "scope": "my-project",
+  "sealed": false,
+  "server_version": "",
+  "session_error": "unwrap token: cannot reach the vault at https://127.0.0.1:18200: tls: failed to verify certificate: x509: certificate signed by unknown authority; set BAO_CACERT to the CA certificate that signed the vault's certificate",
+  "token_policies": null,
+  "token_renewable": false,
+  "token_ttl_seconds": 0
+}
+--- stderr
+<timestamp> session not opened: unwrap token: cannot reach the vault at https://127.0.0.1:18200: tls: failed to verify certificate: x509: certificate signed by unknown authority; set BAO_CACERT to the CA certificate that signed the vault's certificate
+exit_code=0

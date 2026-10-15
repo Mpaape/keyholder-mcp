@@ -1,0 +1,32 @@
+# Start the server, initialize it once, unseal it with 2 of 3 keys
+
+$ bao status
+Key                Value
+---                -----
+Seal Type          shamir
+Initialized        false
+Sealed             true
+Total Shares       0
+Threshold          0
+Unseal Progress    0/0
+Unseal Nonce       n/a
+Version            2.7.1
+Commit Date        <time>
+Storage Type       raft
+HA Enabled         true
+exit_code=2
+
+$ bao operator init -key-shares=3 -key-threshold=2 -format=json > <file kept offline>
+exit_code=0
+
+The file now holds 3 unseal keys and the root token. It never goes into a repository; give each key to a different place or person.
+
+$ bao operator unseal <unseal key 1> >/dev/null
+exit_code=0
+
+Vault: initialized=true sealed=true unseal_progress=1/2
+
+$ bao operator unseal <unseal key 2> >/dev/null
+exit_code=0
+
+Vault: initialized=true sealed=false unseal_progress=0/2

@@ -3,12 +3,12 @@
 $ env -u BAO_TOKEN -u BAO_WRAPPING_TOKEN khcall keyholder_status keyholder_list
 ### keyholder_status
 {
-  "addr": "",
-  "initialized": false,
+  "addr": "http://127.0.0.1:18200",
+  "initialized": true,
   "kv_mount": "secret",
   "scope": "my-project",
   "sealed": false,
-  "server_version": "",
+  "server_version": "2.7.1",
   "session_error": "no token: set BAO_WRAPPING_TOKEN (preferred) or BAO_TOKEN",
   "token_policies": null,
   "token_renewable": false,

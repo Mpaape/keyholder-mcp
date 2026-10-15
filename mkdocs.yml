@@ -75,6 +75,7 @@ nav:
     - index.md
     - Getting started: getting-started.md
     - MCP clients: clients.md
+    - Persistent vault: server.md
   - Tutorials:
     - tutorials/index.md
     - Quickstart: tutorials/quickstart.md
@@ -82,6 +83,7 @@ nav:
     - Guardrails: tutorials/guardrails.md
     - Masking and its limit: tutorials/masking.md
     - Cloud credentials: tutorials/cloud.md
+    - Persistent vault: tutorials/server.md
   - Reference:
     - Configuration: configuration.md
     - Windows and WSL: windows-wsl.md
@@ -97,6 +99,7 @@ nav:
     - pt-BR/index.md
     - Começando: pt-BR/getting-started.md
     - Clientes MCP: pt-BR/clients.md
+    - Cofre persistente: pt-BR/server.md
     - Tutoriais:
       - pt-BR/tutorials/index.md
       - Início rápido: pt-BR/tutorials/quickstart.md
@@ -104,6 +107,7 @@ nav:
       - Proteções: pt-BR/tutorials/guardrails.md
       - Mascaramento e seu limite: pt-BR/tutorials/masking.md
       - Credenciais de nuvem: pt-BR/tutorials/cloud.md
+      - Cofre persistente: pt-BR/tutorials/server.md
     - Configuração: pt-BR/configuration.md
     - Windows e WSL: pt-BR/windows-wsl.md
     - Arquitetura: pt-BR/architecture.md

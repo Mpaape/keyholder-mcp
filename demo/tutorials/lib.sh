@@ -1,9 +1,10 @@
 # Shared helpers for the executable tutorials. Sourced by each run.sh.
 #
 # Requirements on the host: bash, go (or prebuilt binaries in KH_BIN_DIR),
-# bao (OpenBao CLI), curl and python3. Nothing touches a real vault: every
-# run starts its own OpenBao dev server, in memory, on 127.0.0.1:18200, with
-# fake secrets, and stops it on exit.
+# bao (OpenBao CLI), curl and python3 (openssl for the server tutorial).
+# Nothing touches a real vault: every run starts its own OpenBao on
+# 127.0.0.1:18200 (a dev server in memory, or the server tutorial's own server
+# with its data in a temporary directory), with fake secrets, and stops it.
 set -Eeuo pipefail
 
 TUT_DIR="$(cd "$(dirname "${BASH_SOURCE[1]}")" && pwd)"

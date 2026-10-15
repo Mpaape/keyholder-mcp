@@ -2,15 +2,30 @@
 
 ## Unreleased
 
+## 0.3.0 - 2026-10-14
+
+### Added
+
+- Persistent vault guide (EN and pt-BR): one OpenBao node with Raft storage and TLS on localhost, initialized once, unsealed by hand with 2 of 3 keys, the root token revoked after setup, an administrator login, restarts and backups.
+- `deploy/server.hcl` (server config) and `deploy/policy-admin.hcl` (administrator policy).
+- Persistent vault tutorial, run in CI against `deploy/server.hcl`: init, unseal, setup without the root token, Keyholder over TLS, a restart that seals the vault, snapshot backup.
+- Temporary access tutorial, case 4: token expiry revokes the leases the token created.
+
+### Fixed
+
+- A sealed vault was reported as a used or expired wrapped token. The session error now says the vault is sealed, that it must be unsealed and the server restarted, and that the wrapped token was not used.
+- A vault certificate that is not trusted was also blamed on the token, and the message carried the request URL. It now reads `cannot reach the vault at <addr>` and points to `BAO_CACERT`.
+- `keyholder_status` without a session reported an empty address and `initialized: false`. It now reads the vault's state from the unauthenticated `sys/health`.
+
 ### Verified
 
 - Real MCP clients end to end with the v0.2.0 release binary: Claude Code and Codex (spec AC-08 met, by hand).
-- Token expiry revokes the leases the token created (spec section 7, was "to verify"); recorded as case 4 of the temporary access tutorial, run in CI.
+- Token expiry revokes the leases the token created (spec section 7, was "to verify").
 
 ### Changed
 
+- Open decision 1 (how to unseal) is decided: manual Shamir for the one-person vault; auto unseal documented as an option, not tested.
 - MCP clients page: `codex exec` needs `default_tools_approval_mode = "approve"` for the server's tools.
-
 - Two branches only: `dev` takes every change, `main` changes only through a pull request from `dev`. Rulesets versioned in `.github/rulesets/`; CI and the docs build also run on `dev`.
 - The no-AI-attribution guard is the maintainer's own: `attribution.yml` acts only on the repository owner's pull requests, issues and comments and is not a required check or a contribution rule.
 - AurumCode publishes its report as a pull request comment (`publication: comments`) instead of a formal review, so the bot never approves a pull request; its verdict is only the `aurumcode/policy-gate` status.

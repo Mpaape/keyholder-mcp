@@ -49,11 +49,18 @@ case_03-no-token() {
   show env -u BAO_TOKEN -u BAO_WRAPPING_TOKEN khcall keyholder_status keyholder_list
 }
 
+# issue_certificate <token>: a certificate with a 1-hour lease, issued with
+# that token; prints the lease ID.
+issue_certificate() {
+  BAO_TOKEN="$1" bao write -field=lease_id pki/issue/agent common_name=agent.example.test ttl=1h
+  echo
+}
+
 case_04-lease-expiry() {
   step 04-lease-expiry "A 5-second token creates a 1-hour lease; when the token expires, the lease goes with it"
   local t; t="$(admin token create -policy=pki-issue -ttl=5s -explicit-max-ttl=5s -field=token)"
   show_as "BAO_TOKEN=<5-second token> bao write -field=lease_id pki/issue/agent common_name=agent.example.test ttl=1h" \
-    bash -c 'BAO_TOKEN="$1" bao write -field=lease_id pki/issue/agent common_name=agent.example.test ttl=1h && echo' _ "$t"
+    issue_certificate "$t"
   note "Leases under pki/issue/agent before the token expires: $(leases pki/issue/agent)"
   sleep 7
   show_as "BAO_TOKEN=<5-second token> bao token lookup" env BAO_TOKEN="$t" bao token lookup

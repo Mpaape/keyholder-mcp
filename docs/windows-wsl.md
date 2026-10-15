@@ -24,7 +24,7 @@ fsutil behavior query encryptpagingfile
 
 ## Dev server versus real use
 
-`bao server -dev` is for trying things out: data in memory, `127.0.0.1:8200`, no TLS, lost on restart ([OpenBao docs](https://openbao.org/docs/concepts/dev-server/)). Real use needs persistent storage, TLS and an unseal policy; the server starts **sealed** after every restart ([seal concepts](https://openbao.org/docs/concepts/seal/)).
+`bao server -dev` is for trying things out: data in memory, `127.0.0.1:8200`, no TLS, lost on restart ([OpenBao docs](https://openbao.org/docs/concepts/dev-server/)). Real use needs persistent storage, TLS and an unseal policy; the server starts **sealed** after every restart ([seal concepts](https://openbao.org/docs/concepts/seal/)). [Persistent vault](server.md) sets it up.
 
 ## Building on Windows
 

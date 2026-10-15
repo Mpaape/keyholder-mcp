@@ -39,7 +39,7 @@ Para experimentar, o servidor **dev** do OpenBao basta. Ele guarda tudo em memó
 bao server -dev -dev-root-token-id=root-dev
 ```
 
-Para uso real, rode um OpenBao persistente com TLS e uma política de unseal; veja a [documentação do OpenBao](https://openbao.org/docs/) e [Windows e WSL](windows-wsl.md) para onde rodá-lo.
+Para uso real, rode um OpenBao persistente com TLS: [Cofre persistente](server.md) monta um passo a passo, e [Windows e WSL](windows-wsl.md) diz onde rodá-lo.
 
 ## 4. Guardar um segredo e uma política
 

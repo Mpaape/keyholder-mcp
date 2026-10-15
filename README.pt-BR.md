@@ -15,7 +15,7 @@ o agente pede: curl -H "Authorization: Bearer {{vault://my-project/dev/API_TOKEN
 o agente lê:   api says: hello, caller with header Authorization: Bearer [hidden:vault://my-project/dev/API_TOKEN]
 ```
 
-> Situação: v0.2.0. Testado de ponta a ponta contra o OpenBao 2.7.1; cada tutorial é uma execução real e reconferida.
+> Situação: v0.3.0. Testado de ponta a ponta contra o OpenBao 2.7.1; cada tutorial é uma execução real e reconferida.
 
 ## Tools
 
@@ -32,7 +32,7 @@ Baixe o `keyholder-mcp` (e o cliente de depuração `khcall`) para Linux, macOS 
 ```bash
 go build -o keyholder-mcp ./cmd/keyholder-mcp     # ou use o binário de uma release
 
-bao server -dev -dev-root-token-id=root-dev        # em memória, nunca com segredos reais
+bao server -dev -dev-root-token-id=root-dev        # em memória, nunca com segredos reais: veja Cofre persistente
 
 export BAO_ADDR=http://127.0.0.1:8200 BAO_TOKEN=root-dev
 bao kv put -mount=secret my-project/dev API_TOKEN=seu-token-de-api
@@ -65,7 +65,8 @@ Outros servidores MCP para OpenBao e Vault ([mcp-vault](https://github.com/Cloud
 | Página | Conteúdo |
 | --- | --- |
 | [Primeiros passos](https://mpaape.github.io/keyholder-mcp/pt-BR/getting-started/) | Do zero a um agente usando uma credencial |
-| [Tutoriais](https://mpaape.github.io/keyholder-mcp/pt-BR/tutorials/) | Início rápido, acesso temporário, proteções, mascaramento; saídas reais |
+| [Tutoriais](https://mpaape.github.io/keyholder-mcp/pt-BR/tutorials/) | Início rápido, acesso temporário, proteções, mascaramento, nuvem, cofre persistente; saídas reais |
+| [Cofre persistente](https://mpaape.github.io/keyholder-mcp/pt-BR/server/) | OpenBao com dados em disco, TLS e destrancamento, para segredos reais |
 | [Configuração](https://mpaape.github.io/keyholder-mcp/pt-BR/configuration/) | Cada variável, tool e campo |
 | [Modelo de segurança](https://mpaape.github.io/keyholder-mcp/pt-BR/security/) | O que é protegido e o que não é |
 | [Arquitetura](https://mpaape.github.io/keyholder-mcp/pt-BR/architecture/) | Componentes, fluxo de acesso, pacotes |

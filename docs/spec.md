@@ -93,11 +93,13 @@ Against `bao server -dev` 2.7.1, recorded and re-checked by the [tutorials](tuto
 
 - Real MCP clients, with the v0.2.0 release binary: Claude Code (`claude -p`) and Codex (`codex exec`) each called `keyholder_status`, `keyholder_list` and `keyholder_run`; the API received the stored token, the agent read it masked, the value appeared nowhere in either transcript, and `cat` was refused as not allowed. Run by hand on 2026-10-14; clients need their own model credentials, so this is not in CI.
 
+- A persistent server from [`deploy/server.hcl`](https://github.com/Mpaape/keyholder-mcp/blob/main/deploy/server.hcl): Raft storage, TLS, init, Shamir unseal, root token revoked after setup, Keyholder over TLS with `BAO_CACERT`, sealed again after a restart without consuming the wrapped token, snapshot backup ([tutorial](tutorials/server.md), in CI).
+
 Not yet tested: the GCP plugin and real AWS accounts.
 
 ## 9. Open decisions
 
-1. How to unseal after a restart: manual Shamir or auto unseal.
+1. ~~How to unseal after a restart: manual Shamir or auto unseal.~~ Decided: manual Shamir, 2 of 3 keys, for the one-person vault Keyholder targets; auto unseal is documented as an option and not tested ([persistent vault](server.md)).
 2. Second factor: built-in TOTP or an external service.
 3. GCP credential: service account JSON key or dynamic OAuth token.
 4. Agent writes to the vault: a dedicated path, or none.
@@ -123,6 +125,6 @@ Decided: OpenBao as the vault; Go as the language; MIT license; OpenBao inside W
 1. ~~Proof of concept and minimal MCP~~: done, released as v0.1.0.
 2. ~~**Dynamic credentials:** OpenBao AWS and GCP plugins mapped to environment variables~~: done in v0.2.0. AWS `iam_user` credentials are revoked after the run; STS and GCP tokens expire on their own.
 3. **`keyholder_request_access`:** the agent asks, the human approves with TOTP, a new wrapped token reaches the server.
-4. **Persistent server guide:** storage, TLS and unseal.
+4. ~~**Persistent server guide:** storage, TLS and unseal~~: done in v0.3.0 ([persistent vault](server.md)).
 5. **SSH and browser adapters.**
 6. **Upstream:** propose "run with injected variables" and temporary access to an existing project.

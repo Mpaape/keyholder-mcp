@@ -1,0 +1,45 @@
+# After a restart the vault is sealed: Keyholder fails cleanly, then works once it is unsealed
+
+A wrapped token was issued before the restart.
+
+Vault after the restart: initialized=true sealed=true unseal_progress=0/2
+
+$ BAO_WRAPPING_TOKEN=<same wrapped token> khcall keyholder_status
+{
+  "addr": "https://127.0.0.1:18200",
+  "initialized": true,
+  "kv_mount": "secret",
+  "scope": "my-project",
+  "sealed": true,
+  "server_version": "2.7.1",
+  "session_error": "unwrap token: the vault is sealed: an administrator must unseal it (bao operator unseal), then restart this server; the wrapped token was not used",
+  "token_policies": null,
+  "token_renewable": false,
+  "token_ttl_seconds": 0
+}
+--- stderr
+<timestamp> session not opened: unwrap token: the vault is sealed: an administrator must unseal it (bao operator unseal), then restart this server; the wrapped token was not used
+exit_code=0
+
+$ bao operator unseal <unseal key 2> >/dev/null
+exit_code=0
+
+Vault: initialized=true sealed=true unseal_progress=1/2
+
+$ bao operator unseal <unseal key 3> >/dev/null
+exit_code=0
+
+Vault: initialized=true sealed=false unseal_progress=0/2
+
+$ BAO_WRAPPING_TOKEN=<same wrapped token> khcall keyholder_list
+{
+  "entries": [
+    {
+      "ref": "vault://my-project/dev/API_TOKEN",
+      "version": 1
+    }
+  ],
+  "note": "Use {{vault://path/KEY}} in the args, env or files of keyholder_run.",
+  "scope": "my-project"
+}
+exit_code=0

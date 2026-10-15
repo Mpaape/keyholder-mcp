@@ -11,10 +11,11 @@ Valores que mudam entre execuções aparecem pela forma: `<timestamp>`, `<durati
 | [Proteções](guardrails.md) | 1. só o escopo do projeto, mesmo com política ampla; 2. comando fora da lista, com caminho ou com placeholder; 3. variáveis reservadas; 4. o token do cofre nunca chega ao processo filho |
 | [Mascaramento e seu limite](masking.md) | 1. um valor refletido é mascarado; 2. LIMITE: um interpretador liberado codifica o valor e escapa do mascaramento |
 | [Credenciais de nuvem](cloud.md) | 1. o humano habilita o engine da AWS; 2. o agente vê o caminho dinâmico; 3. a AWS CLI roda com uma credencial criada para a execução e revogada depois; 4. caminhos fora da lista são recusados; 5. o gcloud recebe o token por um arquivo temporário |
+| [Cofre persistente](server.md) | 1. inicializar uma vez, destrancar com 2 de 3 chaves; 2. configurar e revogar o token root; 3. Keyholder por TLS, e recusado sem a CA; 4. um reinício tranca o cofre, o token embrulhado sobrevive; 5. backup por snapshot |
 
 ## Como rodar
 
-Precisa de `bash`, `go`, `bao` (CLI do OpenBao), `curl` e `python3`; o tutorial de nuvem também precisa de `aws`, `gcloud`, [moto](https://github.com/getmoto/moto) e do plugin de AWS do OpenBao (veja a página dele). Nada toca um cofre real: cada execução sobe o próprio OpenBao de desenvolvimento, em memória, em `127.0.0.1:18200`, com segredos falsos, e o derruba ao final.
+Precisa de `bash`, `go`, `bao` (CLI do OpenBao), `curl` e `python3`; o tutorial de nuvem também precisa de `aws`, `gcloud`, [moto](https://github.com/getmoto/moto) e do plugin de AWS do OpenBao (veja a página dele), e o do cofre persistente precisa de `openssl`. Nada toca um cofre real: cada execução sobe o próprio OpenBao em `127.0.0.1:18200` (um servidor de desenvolvimento em memória ou, no cofre persistente, um servidor com os dados num diretório temporário), com segredos falsos, e o derruba ao final.
 
 ```bash
 bash demo/tutorials/quickstart/run.sh all       # todos os casos; grava out/
