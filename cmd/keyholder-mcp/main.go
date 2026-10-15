@@ -111,6 +111,11 @@ func dynamicUse(p string) string {
 var errNoSession = errors.New("no session with the vault; a human must renew access outside the chat")
 
 func main() {
+	// `keyholder-mcp exec ...` launches a service with secrets in its
+	// environment (exec.go); everything else is the MCP server.
+	if len(os.Args) > 1 && os.Args[1] == "exec" {
+		os.Exit(runExec(os.Args[2:]))
+	}
 	showVersion := flag.Bool("version", false, "print the version and exit")
 	flag.Parse()
 	if *showVersion {

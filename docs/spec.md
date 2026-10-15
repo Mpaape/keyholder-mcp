@@ -127,4 +127,4 @@ Decided: OpenBao as the vault; Go as the language; MIT license; OpenBao inside W
 3. **`keyholder_request_access`:** the agent asks, the human approves with TOTP, a new wrapped token reaches the server.
 4. ~~**Persistent server guide:** storage, TLS and unseal~~: done in v0.3.0 ([persistent vault](server.md)).
 5. **SSH and browser adapters.**
-6. **Upstream:** propose "run with injected variables" and temporary access to an existing project.
+6. ~~**Upstream:** propose "run with injected variables"~~: shipped as `keyholder-mcp exec` ([configuration](configuration.md#exec-a-service-with-secrets-in-its-environment)); temporary access to an existing project remains.
