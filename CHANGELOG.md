@@ -2,7 +2,14 @@
 
 ## Unreleased
 
+### Verified
+
+- Real MCP clients end to end with the v0.2.0 release binary: Claude Code and Codex (spec AC-08 met, by hand).
+- Token expiry revokes the leases the token created (spec section 7, was "to verify").
+
 ### Changed
+
+- MCP clients page: `codex exec` needs `default_tools_approval_mode = "approve"` for the server's tools.
 
 - Two branches only: `dev` takes every change, `main` changes only through a pull request from `dev`. Rulesets versioned in `.github/rulesets/`; CI and the docs build also run on `dev`.
 - The no-AI-attribution guard is the maintainer's own: `attribution.yml` acts only on the repository owner's pull requests, issues and comments and is not a required check or a contribution rule.

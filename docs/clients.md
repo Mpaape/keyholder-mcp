@@ -91,6 +91,15 @@ codex mcp add keyholder --env BAO_ADDR=http://127.0.0.1:8200 --env KEYHOLDER_SCO
   --env KEYHOLDER_ALLOW=curl,aws,gcloud -- keyholder-mcp
 ```
 
+Codex asks before each MCP tool call. `codex exec` cannot ask, so every call fails with `MCP tool call requires approval, but approval policy is never` unless the server's tools are approved in the config:
+
+```toml
+[mcp_servers.keyholder]
+default_tools_approval_mode = "approve"
+```
+
+The guardrails still apply: `KEYHOLDER_ALLOW` and `KEYHOLDER_SCOPE` decide what runs, not the approval.
+
 ## Other clients
 
 Any client that starts a stdio server with a command and environment variables works: the command is `keyholder-mcp`, with no arguments, and the variables are in [Configuration](configuration.md#environment-variables).
