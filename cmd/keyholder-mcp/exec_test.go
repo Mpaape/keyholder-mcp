@@ -3,12 +3,42 @@ package main
 import (
 	"context"
 	"errors"
+	"os"
+	"os/exec"
 	"sort"
 	"strings"
 	"testing"
+	"time"
 
 	"keyholder-mcp/internal/ref"
 )
+
+// TestMain lets the test binary play the child process of the exit-code
+// tests, so they need no shell and no system command.
+func TestMain(m *testing.M) {
+	switch os.Getenv("KH_EXEC_HELPER") {
+	case "exit3":
+		os.Exit(3)
+	case "sleep":
+		time.Sleep(time.Minute)
+		os.Exit(0)
+	}
+	os.Exit(m.Run())
+}
+
+func TestExitCodeIsTheChilds(t *testing.T) {
+	if got := exitCode(nil); got != 0 {
+		t.Fatalf("nil: got %d, want 0", got)
+	}
+	if got := exitCode(errors.New("wait failed")); got != 1 {
+		t.Fatalf("plain error: got %d, want 1", got)
+	}
+	c := exec.Command(os.Args[0])
+	c.Env = append(os.Environ(), "KH_EXEC_HELPER=exit3")
+	if got := exitCode(c.Run()); got != 3 {
+		t.Fatalf("child exit 3: got %d, want 3", got)
+	}
+}
 
 func fakeResolve(r ref.Ref) (string, error) {
 	if r.Path == "p/x" && r.Key == "K" {

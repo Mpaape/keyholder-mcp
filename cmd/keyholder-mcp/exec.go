@@ -11,6 +11,7 @@ import (
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 
 	"keyholder-mcp/internal/bao"
 	"keyholder-mcp/internal/ref"
@@ -90,40 +91,49 @@ func runExec(args []string) int {
 	child := exec.Command(cmdline[0], cmdline[1:]...)
 	child.Env = env
 	child.Stdin, child.Stdout, child.Stderr = os.Stdin, os.Stdout, os.Stderr
+	// Signals from here on belong to the child. They are captured before
+	// Start, so none can kill the launcher in between, and forwarded as
+	// received once the child runs, so the service shuts down its own way.
+	sigs := make(chan os.Signal, 4)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
+	defer signal.Stop(sigs)
+	start := time.Now()
 	if err := child.Start(); err != nil {
 		log.Printf("start %q: %v", cmdline[0], err)
 		return 2
 	}
-	// From here on a signal is the child's to handle: forward it as received
-	// instead of cancelling the context, so the service shuts down its own way.
-	stop()
-	sigs := make(chan os.Signal, 2)
-	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
-	defer signal.Stop(sigs)
+	stop() // the context no longer cancels on a signal; the child handles it
 	go func() {
 		for s := range sigs {
-			_ = child.Process.Signal(s)
+			if err := child.Process.Signal(s); err != nil {
+				log.Printf("forward %v to pid %d: %v", s, child.Process.Pid, err)
+			}
 		}
 	}()
-	log.Printf("audit exec cmd=%q refs=%v pid=%d", cmdline[0], used, child.Process.Pid)
-	err = child.Wait()
-	var ee *exec.ExitError
-	switch {
-	case err == nil:
+	code := exitCode(child.Wait())
+	// Audit: command, references, exit code, duration. Never values.
+	log.Printf("audit exec cmd=%q refs=%v pid=%d exit=%d dur=%s", cmdline[0], used, child.Process.Pid, code, time.Since(start).Round(time.Millisecond))
+	return code
+}
+
+// exitCode maps the result of Wait to the launcher's exit code: the child's
+// own code; 128 + signal number when a signal killed it (the shell
+// convention, so a supervisor sees the same thing); 1 for any other failure.
+func exitCode(err error) int {
+	if err == nil {
 		return 0
-	case errors.As(err, &ee):
-		if code := ee.ExitCode(); code >= 0 {
-			return code
-		}
-		// Killed by a signal: the shell convention, 128 + signal number.
-		if ws, ok := ee.Sys().(syscall.WaitStatus); ok && ws.Signaled() {
-			return 128 + int(ws.Signal())
-		}
-		return 1
-	default:
-		log.Printf("wait: %v", err)
+	}
+	var ee *exec.ExitError
+	if !errors.As(err, &ee) {
 		return 1
 	}
+	if code := ee.ExitCode(); code >= 0 {
+		return code
+	}
+	if ws, ok := ee.Sys().(syscall.WaitStatus); ok && ws.Signaled() {
+		return 128 + int(ws.Signal())
+	}
+	return 1
 }
 
 // guardedResolver applies the same policy as keyholder_run before touching

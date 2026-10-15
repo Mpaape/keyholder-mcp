@@ -156,9 +156,9 @@ Todas as chamadas rodam numa sessão (um servidor, um desembrulho). `+wait=7s` p
 Para um processo de longa duração no host (um servidor de API, um servidor de modelo) que precisa de uma chave, o `exec` substitui o arquivo `.env`:
 
 ```bash
-keyholder-mcp exec -e API_KEY='{{vault://my-project/prod/API_KEY}}' -- ./server --port 8080
+keyholder-mcp exec -e UPSTREAM_BEARER='{{vault://my-project/prod/API_KEY}}' -- ./server --port 8080
 ```
 
-O template é resolvido no cofre quando o processo inicia e vai só para o ambiente dele. Nada é escrito em disco, nada passa por argumento ou shell, e `BAO_*`, `VAULT_*`, `KEYHOLDER_*` nunca chegam ao filho. Sinais são encaminhados; o código de saída é o do filho; leases `bao://` são revogados quando ele termina. Valem os mesmos `BAO_ADDR`, `BAO_WRAPPING_TOKEN` (ou `BAO_TOKEN`), `KEYHOLDER_SCOPE` e `KEYHOLDER_DYNAMIC`.
+`UPSTREAM_BEARER` é a variável que o seu serviço lê. O template é resolvido no cofre quando o processo inicia e vai só para o ambiente dele. Nada é escrito em disco, nada passa por argumento ou shell, e `BAO_*`, `VAULT_*`, `KEYHOLDER_*` nunca chegam ao filho. Sinais são encaminhados; o código de saída é o do filho; leases `bao://` são revogados quando ele termina. Valem os mesmos `BAO_ADDR`, `BAO_WRAPPING_TOKEN` (ou `BAO_TOKEN`), `KEYHOLDER_SCOPE` e `KEYHOLDER_DYNAMIC`.
 
 Limites, ditos claramente: o valor vive na memória do processo e pode ser lido por qualquer processo do mesmo usuário do sistema (por exemplo via `/proc`). Repassá-lo a `docker run -e` o coloca no `docker inspect`; rode o serviço nativamente, ou dê ao container o mecanismo de arquivo de token.
