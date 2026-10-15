@@ -1,6 +1,6 @@
 # Especificação
 
-Versão 0.3, 2026-10-13. Itens ainda não verificados estão marcados **[a verificar]**.
+Versão 0.4, 2026-10-14. Itens ainda não verificados estão marcados **[a verificar]**.
 
 ## 1. Objetivo
 
@@ -75,7 +75,7 @@ Uma integração sem late binding seguro precisa declarar o limite em vez de fin
 3. O token embrulhado chega ao servidor pelo ambiente do cliente MCP, fora do chat.
 4. O servidor o desembrulha e guarda o token só em memória.
 5. O `keyholder_run` lê o segredo e o injeta no comando.
-6. O token expira; as leituras devolvem 403 e as tools dizem ao agente para pedir renovação. **[a verificar]** se a expiração (não a revogação explícita) também revoga os leases criados com o token; a documentação afirma isso para a revogação.
+6. O token expira; as leituras devolvem 403 e as tools dizem ao agente para pedir renovação. A expiração revoga os leases criados com o token, como a revogação explícita: verificado no OpenBao 2.7.1 e gravado no [tutorial de acesso temporário](tutorials/access.md#4-a-expiracao-revoga-o-que-o-token-criou): o lease de PKI de 1 hora de um token de 5 segundos some quando o token expira.
 
 ## 8. Prova de conceito, verificada
 
@@ -91,11 +91,15 @@ Contra o `bao server -dev` 2.7.1, gravada e reconferida pelos [tutoriais](tutori
 
 - Uma credencial dinâmica criada pelo plugin real de AWS do OpenBao rodou a AWS CLI contra um emulador local da AWS (moto) e foi apagada quando o comando terminou.
 
-Ainda não testado: clientes MCP reais de ponta a ponta; o plugin do GCP e contas AWS reais.
+- Clientes MCP reais, com o binário da release v0.2.0: Claude Code (`claude -p`) e Codex (`codex exec`) chamaram `keyholder_status`, `keyholder_list` e `keyholder_run`; a API recebeu o token guardado, o agente o leu mascarado, o valor não apareceu em nenhuma das transcrições, e `cat` foi recusado por não estar permitido. Executado à mão em 2026-10-14; os clientes precisam das próprias credenciais de modelo, então isso não roda no CI.
+
+- Um servidor persistente a partir de [`deploy/server.hcl`](https://github.com/Mpaape/keyholder-mcp/blob/main/deploy/server.hcl): armazenamento Raft, TLS, init, unseal Shamir, token root revogado depois da configuração, Keyholder por TLS com `BAO_CACERT`, selado de novo depois de um reinício sem consumir o token embrulhado, backup por snapshot ([tutorial](tutorials/server.md), no CI).
+
+Ainda não testado: o plugin do GCP e contas AWS reais.
 
 ## 9. Decisões em aberto
 
-1. Como fazer o unseal depois de reiniciar: Shamir manual ou auto unseal.
+1. ~~Como fazer o unseal depois de reiniciar: Shamir manual ou auto unseal.~~ Decidido: Shamir manual, 2 de 3 chaves, para o cofre de uma pessoa que é o alvo do Keyholder; o auto unseal fica documentado como opção, sem teste ([cofre persistente](server.md)).
 2. Segundo fator: TOTP embutido ou serviço externo.
 3. Credencial do GCP: chave JSON de service account ou token OAuth dinâmico.
 4. Escrita do agente no cofre: um caminho dedicado, ou nenhuma.
@@ -114,13 +118,13 @@ Decidido: OpenBao como cofre; Go como linguagem; licença MIT; OpenBao dentro do
 | AC-05 | Dentro da sessão, operações repetidas não pedem nova aprovação; depois da expiração, renovação fora do chat | Atendido |
 | AC-06 | Logs, mensagens MCP e artefatos do produto não contêm valores | Atendido |
 | AC-07 | Uma integração sem late binding seguro declara o seu limite | Atendido (documentado) |
-| AC-08 | Funciona com pelo menos dois clientes MCP sem mudar o armazenamento | Aberto (documentado, não roda no CI) |
+| AC-08 | Funciona com pelo menos dois clientes MCP sem mudar o armazenamento | Atendido com Claude Code e Codex, à mão (fora do CI) |
 
 ## 11. Roteiro
 
 1. ~~Prova de conceito e MCP mínimo~~: feito, publicado como v0.1.0.
 2. ~~**Credenciais dinâmicas:** plugins de AWS e GCP do OpenBao mapeados para variáveis de ambiente~~: feito na v0.2.0. Credenciais AWS `iam_user` são revogadas depois da execução; STS e tokens do GCP expiram sozinhos.
 3. **`keyholder_request_access`:** o agente pede, o humano aprova com TOTP, um novo token embrulhado chega ao servidor.
-4. **Guia de servidor persistente:** armazenamento, TLS e unseal.
+4. ~~**Guia de servidor persistente:** armazenamento, TLS e unseal~~: feito na v0.3.0 ([cofre persistente](server.md)).
 5. **Adaptadores de SSH e navegador.**
 6. **Upstream:** propor "executar com variáveis injetadas" e acesso temporário a um projeto existente.

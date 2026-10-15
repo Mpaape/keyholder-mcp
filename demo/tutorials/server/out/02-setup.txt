@@ -1,0 +1,46 @@
+# With the root token: KV, policies and an administrator login; then the root token is revoked
+
+$ bao secrets enable -path=secret kv-v2
+Success! Enabled the kv-v2 secrets engine at: secret/
+exit_code=0
+
+$ bao kv put -mount=secret my-project/dev API_TOKEN=tok-fake-not-a-real-secret
+======= Secret Path =======
+secret/data/my-project/dev
+
+======= Metadata =======
+Key                Value
+---                -----
+created_time       <time>
+custom_metadata    <nil>
+deletion_time      n/a
+destroyed          false
+version            1
+exit_code=0
+
+$ bao policy write my-project-read deploy/policy-project-read.hcl
+Success! Uploaded policy: my-project-read
+exit_code=0
+
+$ bao policy write keyholder-admin deploy/policy-admin.hcl
+Success! Uploaded policy: keyholder-admin
+exit_code=0
+
+$ bao auth enable userpass
+Success! Enabled userpass auth method at: userpass/
+exit_code=0
+
+$ bao write auth/userpass/users/admin password=<password> token_policies=keyholder-admin token_ttl=8h token_max_ttl=8h
+Success! Data written to: auth/userpass/users/admin
+exit_code=0
+
+$ bao token revoke -self
+Success! Revoked token (if it existed)
+exit_code=0
+
+The root token no longer exists. Each day the administrator logs in instead:
+
+$ bao login -method=userpass -field=token username=admin password=<password> > <administrator token>
+exit_code=0
+
+Policies of the administrator's token: default, keyholder-admin

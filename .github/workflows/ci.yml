@@ -96,7 +96,7 @@ jobs:
       - name: Run tutorials and compare with expected/
         run: |
           bao version
-          for t in quickstart access guardrails masking cloud; do
+          for t in quickstart access guardrails masking cloud server; do
             echo "::group::$t"
             bash "demo/tutorials/$t/run.sh" all
             bash "demo/tutorials/$t/run.sh" --check

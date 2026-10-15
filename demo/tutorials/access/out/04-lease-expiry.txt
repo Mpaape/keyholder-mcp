@@ -1,0 +1,19 @@
+# A 5-second token creates a 1-hour lease; when the token expires, the lease goes with it
+
+$ BAO_TOKEN=<5-second token> bao write -field=lease_id pki/issue/agent common_name=agent.example.test ttl=1h
+pki/issue/agent/<id>
+exit_code=0
+
+Leases under pki/issue/agent before the token expires: 1
+
+$ BAO_TOKEN=<5-second token> bao token lookup
+--- stderr
+Error looking up token: Error making API request.
+
+URL: GET http://127.0.0.1:18200/v1/auth/token/lookup-self
+Code: 403. Errors:
+
+* permission denied
+exit_code=2
+
+Leases under pki/issue/agent after the token expired: 0

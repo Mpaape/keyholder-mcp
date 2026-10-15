@@ -1,9 +1,10 @@
 # Shared helpers for the executable tutorials. Sourced by each run.sh.
 #
 # Requirements on the host: bash, go (or prebuilt binaries in KH_BIN_DIR),
-# bao (OpenBao CLI), curl and python3. Nothing touches a real vault: every
-# run starts its own OpenBao dev server, in memory, on 127.0.0.1:18200, with
-# fake secrets, and stops it on exit.
+# bao (OpenBao CLI), curl and python3 (openssl for the server tutorial).
+# Nothing touches a real vault: every run starts its own OpenBao on
+# 127.0.0.1:18200 (a dev server in memory, or the server tutorial's own server
+# with its data in a temporary directory), with fake secrets, and stops it.
 set -Eeuo pipefail
 
 TUT_DIR="$(cd "$(dirname "${BASH_SOURCE[1]}")" && pwd)"
@@ -106,7 +107,8 @@ normalize() {
     -e 's/"token_expire_time": "[^"]*"/"token_expire_time": "<time>"/g'\
     -e 's/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.]+(Z|[+-][0-9:]+)/<time>/g' \
     -e 's/vault-token-([A-Za-z0-9_-]+)-[0-9]{9,}-[A-Za-z0-9]+/vault-token-\1-<id>/g' \
-    -e 's/"UserId": "[A-Za-z0-9]+"/"UserId": "<id>"/g'
+    -e 's/"UserId": "[A-Za-z0-9]+"/"UserId": "<id>"/g' \
+    -e 's#(pki/issue/[A-Za-z0-9_-]+/)[A-Za-z0-9]+#\1<id>#g'
 }
 
 # step <case> <title>: starts a case file in out/.

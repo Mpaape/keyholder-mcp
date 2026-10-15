@@ -1,6 +1,6 @@
 # Specification
 
-Version 0.3, 2026-10-13. Items not yet verified are marked **[to verify]**.
+Version 0.4, 2026-10-14. Items not yet verified are marked **[to verify]**.
 
 ## 1. Goal
 
@@ -75,7 +75,7 @@ An integration without safe late binding must state the limit instead of pretend
 3. The wrapped token reaches the server through the MCP client's environment, outside the chat.
 4. The server unwraps it and keeps the token only in memory.
 5. `keyholder_run` reads the secret and injects it into the command.
-6. The token expires; reads return 403 and the tools tell the agent to have access renewed. **[to verify]** whether expiry (not explicit revocation) also revokes leases created with the token; the documentation states it for revocation.
+6. The token expires; reads return 403 and the tools tell the agent to have access renewed. Expiry revokes the leases created with the token, as explicit revocation does: verified against OpenBao 2.7.1 and recorded in the [temporary access tutorial](tutorials/access.md#4-expiry-revokes-what-the-token-created): a 5-second token's 1-hour PKI lease is gone once the token expires.
 
 ## 8. Proof of concept, verified
 
@@ -91,11 +91,15 @@ Against `bao server -dev` 2.7.1, recorded and re-checked by the [tutorials](tuto
 
 - A dynamic AWS credential from OpenBao's real AWS plugin ran the AWS CLI against a local AWS emulator (moto) and was deleted when the command ended.
 
-Not yet tested: real MCP clients end to end; the GCP plugin and real AWS accounts.
+- Real MCP clients, with the v0.2.0 release binary: Claude Code (`claude -p`) and Codex (`codex exec`) each called `keyholder_status`, `keyholder_list` and `keyholder_run`; the API received the stored token, the agent read it masked, the value appeared nowhere in either transcript, and `cat` was refused as not allowed. Run by hand on 2026-10-14; clients need their own model credentials, so this is not in CI.
+
+- A persistent server from [`deploy/server.hcl`](https://github.com/Mpaape/keyholder-mcp/blob/main/deploy/server.hcl): Raft storage, TLS, init, Shamir unseal, root token revoked after setup, Keyholder over TLS with `BAO_CACERT`, sealed again after a restart without consuming the wrapped token, snapshot backup ([tutorial](tutorials/server.md), in CI).
+
+Not yet tested: the GCP plugin and real AWS accounts.
 
 ## 9. Open decisions
 
-1. How to unseal after a restart: manual Shamir or auto unseal.
+1. ~~How to unseal after a restart: manual Shamir or auto unseal.~~ Decided: manual Shamir, 2 of 3 keys, for the one-person vault Keyholder targets; auto unseal is documented as an option and not tested ([persistent vault](server.md)).
 2. Second factor: built-in TOTP or an external service.
 3. GCP credential: service account JSON key or dynamic OAuth token.
 4. Agent writes to the vault: a dedicated path, or none.
@@ -114,13 +118,13 @@ Decided: OpenBao as the vault; Go as the language; MIT license; OpenBao inside W
 | AC-05 | Within a session, repeated operations need no re-approval; after expiry, renewal outside the chat | Met |
 | AC-06 | Logs, MCP messages and product artifacts contain no values | Met |
 | AC-07 | An integration without safe late binding states its limit | Met (documented) |
-| AC-08 | Works with at least two MCP clients without changing storage | Open (documented, not run in CI) |
+| AC-08 | Works with at least two MCP clients without changing storage | Met with Claude Code and Codex, by hand (not in CI) |
 
 ## 11. Roadmap
 
 1. ~~Proof of concept and minimal MCP~~: done, released as v0.1.0.
 2. ~~**Dynamic credentials:** OpenBao AWS and GCP plugins mapped to environment variables~~: done in v0.2.0. AWS `iam_user` credentials are revoked after the run; STS and GCP tokens expire on their own.
 3. **`keyholder_request_access`:** the agent asks, the human approves with TOTP, a new wrapped token reaches the server.
-4. **Persistent server guide:** storage, TLS and unseal.
+4. ~~**Persistent server guide:** storage, TLS and unseal~~: done in v0.3.0 ([persistent vault](server.md)).
 5. **SSH and browser adapters.**
 6. **Upstream:** propose "run with injected variables" and temporary access to an existing project.

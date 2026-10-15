@@ -32,7 +32,7 @@ import (
 	"keyholder-mcp/internal/runner"
 )
 
-var version = "0.2.0-dev"
+var version = "0.3.0-dev"
 
 type config struct {
 	mount   string
@@ -160,7 +160,9 @@ func main() {
 		Description: "Vault and session status: sealed or not, remaining token TTL and policies. Never returns tokens or secret values.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, _ struct{}) (*mcp.CallToolResult, bao.Status, error) {
 		if store == nil {
-			return nil, bao.Status{Mount: cfg.mount, Scope: cfg.scope, SessionError: openErr.Error()}, nil
+			st := bao.Probe(ctx, cfg.mount, cfg.scope)
+			st.SessionError = openErr.Error()
+			return nil, st, nil
 		}
 		st, err := store.Status(ctx)
 		return nil, st, err
