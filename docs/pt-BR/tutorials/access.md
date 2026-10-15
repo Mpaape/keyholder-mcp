@@ -2,7 +2,7 @@
 
 ## Objetivo
 
-Ao final você vai ver que um token embrulhado funciona uma vez, que a sessão termina quando o token expira e que o servidor falha de forma previsível sem token.
+Ao final você vai ver que um token embrulhado funciona uma vez, que a sessão termina quando o token expira que o servidor falha de forma previsível sem token e que, quando um token expira, o OpenBao revoga tudo o que ele criou.
 
 Cada comando e cada saída abaixo vêm de uma execução real, gravada em `demo/tutorials/access/expected/` e conferida por `run.sh --check`. As saídas são do programa, em inglês.
 
@@ -37,4 +37,12 @@ O servidor sobe mesmo assim, para o agente chamar `keyholder_status` e entender 
 
 ```text
 --8<-- "demo/tutorials/access/expected/03-no-token.txt"
+```
+
+## 4. A expiração revoga o que o token criou
+
+O Keyholder revoga os leases de uma execução quando o comando termina. Se essa limpeza não acontecer, porque o servidor foi encerrado à força ou a máquina caiu, a própria expiração do token os remove. Aqui um token de 5 segundos emite um certificado cujo lease duraria 1 hora; quando o token expira, o lease vai junto. O certificado vem do motor PKI do OpenBao, então o caso não depende de serviço externo.
+
+```text
+--8<-- "demo/tutorials/access/expected/04-lease-expiry.txt"
 ```

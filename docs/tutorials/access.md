@@ -2,7 +2,7 @@
 
 ## Goal
 
-At the end you will see that a wrapped token works once, that a session ends when its token expires, and that the server fails predictably without a token.
+At the end you will see that a wrapped token works once, that a session ends when its token expires, that the server fails predictably without a token, and that when a token expires, OpenBao revokes everything it created.
 
 Every command and output below comes from a real run, recorded in `demo/tutorials/access/expected/` and checked by `run.sh --check`.
 
@@ -37,4 +37,12 @@ The server still starts, so the agent can call `keyholder_status` and learn why 
 
 ```text
 --8<-- "demo/tutorials/access/expected/03-no-token.txt"
+```
+
+## 4. Expiry revokes what the token created
+
+Keyholder revokes the leases of a run when the command ends. If that cleanup never happens, because the server was killed or the machine went down, the token's own expiry still takes them away. Here a 5-second token issues a certificate whose lease would last 1 hour; when the token expires, the lease is gone with it. The certificate comes from OpenBao's PKI engine, so the case needs no external service.
+
+```text
+--8<-- "demo/tutorials/access/expected/04-lease-expiry.txt"
 ```

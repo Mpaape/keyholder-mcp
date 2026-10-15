@@ -7,7 +7,7 @@ Valores que mudam entre execuções aparecem pela forma: `<timestamp>`, `<durati
 | Tutorial | Casos |
 | --- | --- |
 | [Início rápido](quickstart.md) | 1. o humano guarda um segredo e uma política; 2. o agente vê as tools, a sessão e os nomes; 3. o agente chama uma API com o token, mascarado |
-| [Acesso temporário](access.md) | 1. um token embrulhado abre uma sessão, reusar falha; 2. um token de 5 segundos expira no meio da sessão; 3. sem token o servidor explica e recusa |
+| [Acesso temporário](access.md) | 1. um token embrulhado abre uma sessão, reusar falha; 2. um token de 5 segundos expira no meio da sessão; 3. sem token o servidor explica e recusa; 4. a expiração revoga os leases que o token criou |
 | [Proteções](guardrails.md) | 1. só o escopo do projeto, mesmo com política ampla; 2. comando fora da lista, com caminho ou com placeholder; 3. variáveis reservadas; 4. o token do cofre nunca chega ao processo filho |
 | [Mascaramento e seu limite](masking.md) | 1. um valor refletido é mascarado; 2. LIMITE: um interpretador liberado codifica o valor e escapa do mascaramento |
 | [Credenciais de nuvem](cloud.md) | 1. o humano habilita o engine da AWS; 2. o agente vê o caminho dinâmico; 3. a AWS CLI roda com uma credencial criada para a execução e revogada depois; 4. caminhos fora da lista são recusados; 5. o gcloud recebe o token por um arquivo temporário |

@@ -5,7 +5,7 @@
 ### Verified
 
 - Real MCP clients end to end with the v0.2.0 release binary: Claude Code and Codex (spec AC-08 met, by hand).
-- Token expiry revokes the leases the token created (spec section 7, was "to verify").
+- Token expiry revokes the leases the token created (spec section 7, was "to verify"); recorded as case 4 of the temporary access tutorial, run in CI.
 
 ### Changed
 

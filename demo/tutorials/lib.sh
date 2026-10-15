@@ -106,7 +106,8 @@ normalize() {
     -e 's/"token_expire_time": "[^"]*"/"token_expire_time": "<time>"/g'\
     -e 's/[0-9]{4}-[0-9]{2}-[0-9]{2}T[0-9:.]+(Z|[+-][0-9:]+)/<time>/g' \
     -e 's/vault-token-([A-Za-z0-9_-]+)-[0-9]{9,}-[A-Za-z0-9]+/vault-token-\1-<id>/g' \
-    -e 's/"UserId": "[A-Za-z0-9]+"/"UserId": "<id>"/g'
+    -e 's/"UserId": "[A-Za-z0-9]+"/"UserId": "<id>"/g' \
+    -e 's#(pki/issue/[A-Za-z0-9_-]+/)[A-Za-z0-9]+#\1<id>#g'
 }
 
 # step <case> <title>: starts a case file in out/.

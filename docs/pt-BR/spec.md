@@ -75,7 +75,7 @@ Uma integração sem late binding seguro precisa declarar o limite em vez de fin
 3. O token embrulhado chega ao servidor pelo ambiente do cliente MCP, fora do chat.
 4. O servidor o desembrulha e guarda o token só em memória.
 5. O `keyholder_run` lê o segredo e o injeta no comando.
-6. O token expira; as leituras devolvem 403 e as tools dizem ao agente para pedir renovação. A expiração revoga os leases criados com o token, como a revogação explícita: verificado no OpenBao 2.7.1 com um lease de PKI de 1 hora emitido por um token de 20 segundos, que sumiu (`invalid lease`) quando o token expirou.
+6. O token expira; as leituras devolvem 403 e as tools dizem ao agente para pedir renovação. A expiração revoga os leases criados com o token, como a revogação explícita: verificado no OpenBao 2.7.1 e gravado no [tutorial de acesso temporário](tutorials/access.md#4-a-expiracao-revoga-o-que-o-token-criou): o lease de PKI de 1 hora de um token de 5 segundos some quando o token expira.
 
 ## 8. Prova de conceito, verificada
 

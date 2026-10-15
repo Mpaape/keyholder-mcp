@@ -75,7 +75,7 @@ An integration without safe late binding must state the limit instead of pretend
 3. The wrapped token reaches the server through the MCP client's environment, outside the chat.
 4. The server unwraps it and keeps the token only in memory.
 5. `keyholder_run` reads the secret and injects it into the command.
-6. The token expires; reads return 403 and the tools tell the agent to have access renewed. Expiry revokes the leases created with the token, as explicit revocation does: verified against OpenBao 2.7.1 with a PKI lease of 1 hour issued by a 20-second token, which was gone (`invalid lease`) once the token expired.
+6. The token expires; reads return 403 and the tools tell the agent to have access renewed. Expiry revokes the leases created with the token, as explicit revocation does: verified against OpenBao 2.7.1 and recorded in the [temporary access tutorial](tutorials/access.md#4-expiry-revokes-what-the-token-created): a 5-second token's 1-hour PKI lease is gone once the token expires.
 
 ## 8. Proof of concept, verified
 
