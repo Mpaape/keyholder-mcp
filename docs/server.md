@@ -123,6 +123,10 @@ bao operator raft snapshot save keyholder-$(date +%F).snap
 
 The snapshot is encrypted with the vault's keys. Restore it with `bao operator raft snapshot restore` and unseal with the same unseal keys. Keep snapshots and unseal keys apart.
 
+## A themed UI (optional)
+
+The OpenBao web UI can be served with the Keyholder look — black-and-white, the Keyholder mark — through the reverse proxy in [`deploy/ui-theme/`](https://github.com/Mpaape/keyholder-mcp/tree/main/deploy/ui-theme). It is cosmetic: it injects one same-origin stylesheet and changes no behaviour. `docker compose -f deploy/ui-theme/compose.yml up`, then point `BAO_ADDR` at the proxy.
+
 ## What this setup does not cover
 
 - **A second factor** for the administrator login. OpenBao supports TOTP for logins; Keyholder has not chosen how to use it yet ([decision 2](spec.md#9-open-decisions)).

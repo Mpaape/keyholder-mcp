@@ -1,0 +1,36 @@
+/* Keyholder theme for the OpenBao web UI. Black-and-white, line-based.
+   Served by the reverse proxy (deploy/ui-theme), same origin, so it passes
+   OpenBao's Content-Security-Policy (style-src 'self', img-src 'self',
+   font-src 'self'). It only restyles; it changes no behaviour. */
+:root{--kh-ink:#111111;--kh-line:#e3e3e3;--kh-mut:#6b6b6b;--kh-hi:#f5f5f5}
+body,.hds-app-frame,main,.hds-side-nav,button,input,select{font-family:ui-sans-serif,"Segoe UI",Roboto,Helvetica,Arial,sans-serif!important}
+
+/* Sidebar: white, one hairline, black ink */
+.hds-side-nav__wrapper,.hds-app-frame__sidebar,.hds-side-nav{background:#ffffff!important;border-right:1px solid var(--kh-line)!important}
+.hds-side-nav a,.hds-side-nav button,.hds-side-nav span{color:var(--kh-ink)!important;font-weight:500!important;background:transparent!important;text-decoration:none!important}
+.hds-side-nav__list-title,.hds-side-nav h2,.hds-side-nav .hds-text{color:var(--kh-mut)!important;text-transform:uppercase;letter-spacing:.09em;font-size:11px!important;font-weight:600!important}
+.hds-side-nav li a:hover,.hds-side-nav__list-item-link:hover{background:var(--kh-hi)!important}
+.hds-side-nav .active:not(.hds-side-nav__home-link),.hds-side-nav [aria-current="page"]{background:var(--kh-hi)!important;box-shadow:inset 3px 0 0 var(--kh-ink)!important;border-radius:0!important}
+.hds-side-nav-header button,.hds-side-nav__dropdown button,.hds-side-nav-header a.hds-button{background:#fff!important;border:1px solid var(--kh-line)!important;box-shadow:none!important;color:var(--kh-ink)!important}
+
+/* Logo: hide OpenBao's, paint ours in the same slot */
+.hds-side-nav__home-link,.hds-side-nav__home-link.active{background:transparent!important;box-shadow:none!important;padding:0!important;margin-left:16px!important;width:auto!important;overflow:visible!important}
+.hds-side-nav-header__logo-container{width:auto!important;overflow:visible!important}
+.hds-side-nav__home-link .hs-icon,.hds-side-nav__home-link .hs-icon svg{display:inline-block}
+.hds-side-nav__home-link .hs-icon svg.openbao-logo{display:none!important}
+.hds-side-nav__home-link .hs-icon{width:168px!important;height:34px!important;background:url(/kh/logo.svg) left center/contain no-repeat!important}
+
+/* Login (splash) centered logo */
+.brand-icon-large svg.openbao-logo{display:none!important}
+.brand-icon-large{width:320px!important;height:72px!important;background:url(/kh/logo.svg) center/contain no-repeat!important}
+.brand-icon-large .hs-icon{display:none!important}
+
+/* Links, tabs, primary buttons: black, no purple */
+main a,.breadcrumb a,.linked-block a,.hds-tabs__tab{color:var(--kh-ink)!important}
+.hds-tabs__tab--is-selected,.tabs .is-active a{color:var(--kh-ink)!important;border-color:var(--kh-ink)!important}
+.hds-button--color-primary,button[type=submit],.button.is-primary,.hds-button--is-primary{background:var(--kh-ink)!important;border:1px solid var(--kh-ink)!important;color:#fff!important;border-radius:6px!important;box-shadow:none!important}
+.hds-button--color-secondary{border:1px solid var(--kh-ink)!important;color:var(--kh-ink)!important;background:#fff!important}
+
+/* Footer */
+footer.footer{color:var(--kh-mut)!important}
+footer.footer svg.openbao-logo{display:none!important}

@@ -1,0 +1,15 @@
+# OpenBao with the Keyholder-themed UI in front. Dev server shown; for real
+# use, run OpenBao from deploy/server.hcl (docs/server.md) and point the
+# proxy's upstream at it.
+services:
+  openbao:
+    image: openbao/openbao:2.7.1
+    command: server -dev -dev-root-token-id=root-dev -dev-listen-address=0.0.0.0:8200
+    cap_add: [IPC_LOCK]
+  keyholder-ui:
+    image: nginx:1.27-alpine
+    depends_on: [openbao]
+    ports: ["127.0.0.1:8200:8200"]
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./kh:/srv/kh:ro

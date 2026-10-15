@@ -123,6 +123,10 @@ bao operator raft snapshot save keyholder-$(date +%F).snap
 
 O snapshot é cifrado com as chaves do cofre. Restaure com `bao operator raft snapshot restore` e destranque com as mesmas chaves. Guarde snapshots e chaves de destrancamento separados.
 
+## Uma interface com a marca (opcional)
+
+A interface web do OpenBao pode ser servida com a cara do Keyholder — preto e branco, o símbolo do Keyholder — pelo proxy reverso em [`deploy/ui-theme/`](https://github.com/Mpaape/keyholder-mcp/tree/main/deploy/ui-theme). É cosmético: injeta uma folha de estilo do mesmo host e não muda comportamento. `docker compose -f deploy/ui-theme/compose.yml up`, e aponte o `BAO_ADDR` para o proxy.
+
 ## O que este cenário não cobre
 
 - **Segundo fator** no login do administrador. O OpenBao suporta TOTP em logins; o Keyholder ainda não escolheu como usá-lo ([decisão 2](spec.md#9-decisoes-em-aberto)).

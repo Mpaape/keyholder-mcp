@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- `deploy/ui-theme/`: a reverse proxy (nginx) that serves OpenBao's web UI with a Keyholder theme — black-and-white, line-based, the Keyholder mark in place of the OpenBao logo. Cosmetic only: it injects one same-origin stylesheet and serves the logo under `/kh/`, respects OpenBao's Content-Security-Policy, and changes no behaviour. `docker compose -f deploy/ui-theme/compose.yml up`.
+
 ## 0.3.0 - 2026-10-14
 
 ### Added
