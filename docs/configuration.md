@@ -77,7 +77,7 @@ Input:
 | `command` | string | Name of an allowed command. No path, no placeholder |
 | `args` | list of strings | Arguments; may contain `{{vault://...}}` and `{{bao://...}}` |
 | `env` | map | Extra variables for the child; values may contain placeholders. Names `BAO_*`, `VAULT_*`, `KEYHOLDER_*` are refused |
-| `files` | map | Variables that receive the **path** of a temporary file holding the value (mode 0600, deleted after the run), for tools that read a credential from a file |
+| `files` | map | Variables that receive the **path** of a temporary file holding the value (mode 0600, deleted after the run), for tools that read a credential from a file; `{{file:VAR}}` in `args` or `env` is that path |
 | `credentials` | list of strings | Cloud credentials set the way each CLI expects: `aws:<path>` or `gcp:<path>`. See [Dynamic credentials](#dynamic-credentials) |
 
 Output:
@@ -150,6 +150,18 @@ khcall [-server keyholder-mcp] <tool> ['<json arguments>'] [+wait=<duration>] [<
 ```
 
 All calls run in one session (one server, one unwrap). `+wait=7s` pauses between calls. Exit status: 0 when every call succeeds, 1 when a tool reports an error, 2 on a usage or protocol error.
+
+## `{{file:VAR}}`: a credential file as an argument
+
+Some tools take a credential file where you point them, not from a variable: `ssh -i`, `curl --key`, `curl -K`, `psql` with a `PGPASSFILE`. Declare the file in `files` and use `{{file:VAR}}` wherever the tool expects its path, in `args` or in `env`:
+
+```json
+{"command": "curl",
+ "args": ["-sS", "-K", "{{file:CFG}}", "https://api.example.com/health"],
+ "files": {"CFG": "header = \"Authorization: Bearer {{vault://my-project/dev/API_TOKEN}}\""}}
+```
+
+The file is mode 0600, holds the resolved value, exists only during the run and is deleted after it; the output comes back masked as usual. An unknown `VAR` is an error, and a file cannot itself contain `{{file:...}}`. Recorded in the [quickstart tutorial](tutorials/quickstart.md#4-a-credential-file-as-an-argument).
 
 ## `exec`: a service with secrets in its environment
 

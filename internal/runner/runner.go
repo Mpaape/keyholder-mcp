@@ -59,9 +59,9 @@ type Runner struct {
 // Request is what the agent asks for. Secrets only enter as placeholders.
 type Request struct {
 	Command     string            `json:"command" jsonschema:"name of an allowed command, without a path or placeholders, for example curl or aws"`
-	Args        []string          `json:"args,omitempty" jsonschema:"arguments; may contain {{vault://path/KEY}} or {{bao://path#field}}"`
-	Env         map[string]string `json:"env,omitempty" jsonschema:"extra variables for the process; values may contain placeholders"`
-	Files       map[string]string `json:"files,omitempty" jsonschema:"variables that receive the path of a temporary file holding the value; values may contain placeholders; the file is deleted after the run"`
+	Args        []string          `json:"args,omitempty" jsonschema:"arguments; may contain {{vault://path/KEY}} or {{bao://path#field}}, and {{file:VAR}} for the path of a file declared in files"`
+	Env         map[string]string `json:"env,omitempty" jsonschema:"extra variables for the process; values may contain placeholders, including {{file:VAR}}"`
+	Files       map[string]string `json:"files,omitempty" jsonschema:"variables that receive the path of a temporary file holding the value; values may contain placeholders; the file is deleted after the run; {{file:VAR}} in args or env is that same path"`
 	Credentials []string          `json:"credentials,omitempty" jsonschema:"cloud credentials set the way each CLI expects: aws:<path> (AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN) or gcp:<path> (gcloud access token file), for example aws:aws/creds/deploy"`
 }
 
@@ -88,7 +88,7 @@ var envNameRe = regexp.MustCompile(`^[A-Za-z_][A-Za-z0-9_]*$`)
 // Run validates the request, resolves the references, runs the command and
 // masks the output.
 func (r *Runner) Run(ctx context.Context, req Request) (Result, error) {
-	if req.Command == "" || ref.HasPlaceholder(req.Command) || strings.ContainsAny(req.Command, `/\`) {
+	if req.Command == "" || ref.HasPlaceholder(req.Command) || filePlaceholderRe.MatchString(req.Command) || strings.ContainsAny(req.Command, `/\`) {
 		return Result{}, fmt.Errorf("%w: give only the command name", ErrNotAllowed)
 	}
 	if !r.Allow[req.Command] {
@@ -149,9 +149,39 @@ func (r *Runner) Run(ctx context.Context, req Request) (Result, error) {
 		return Result{}, err
 	}
 
+	// Temporary files come first: {{file:VAR}} in args and env needs their paths.
+	filePaths := map[string]string{}
+	if len(files) > 0 {
+		dir, err := os.MkdirTemp("", "keyholder-")
+		if err != nil {
+			return Result{}, fmt.Errorf("temporary directory: %w", err)
+		}
+		defer os.RemoveAll(dir) // best effort: the files hold resolved values
+		for i, k := range sortedKeys(files) {
+			if !envNameRe.MatchString(k) || isReserved(k) {
+				return Result{}, fmt.Errorf("variable name not allowed: %q", k)
+			}
+			if filePlaceholderRe.MatchString(files[k]) {
+				return Result{}, fmt.Errorf("files[%s]: a file cannot contain {{file:...}}", k)
+			}
+			v, _, err := ref.Expand(files[k], resolve)
+			if err != nil {
+				return Result{}, err
+			}
+			fp := filepath.Join(dir, fmt.Sprintf("value-%d", i))
+			if err := os.WriteFile(fp, []byte(v), 0o600); err != nil {
+				return Result{}, fmt.Errorf("write temporary file for %s: %w", k, err)
+			}
+			filePaths[k] = fp
+		}
+	}
+
 	args := make([]string, len(req.Args))
 	for i, a := range req.Args {
 		if args[i], _, err = ref.Expand(a, resolve); err != nil {
+			return Result{}, err
+		}
+		if args[i], err = expandFilePaths(args[i], filePaths); err != nil {
 			return Result{}, err
 		}
 	}
@@ -170,28 +200,13 @@ func (r *Runner) Run(ctx context.Context, req Request) (Result, error) {
 		if v == "" && optional[k] {
 			continue
 		}
+		if v, err = expandFilePaths(v, filePaths); err != nil {
+			return Result{}, err
+		}
 		env = append(env, k+"="+v)
 	}
-	if len(files) > 0 {
-		dir, err := os.MkdirTemp("", "keyholder-")
-		if err != nil {
-			return Result{}, fmt.Errorf("temporary directory: %w", err)
-		}
-		defer os.RemoveAll(dir) // best effort: the files hold resolved values
-		for i, k := range sortedKeys(files) {
-			if !envNameRe.MatchString(k) || isReserved(k) {
-				return Result{}, fmt.Errorf("variable name not allowed: %q", k)
-			}
-			v, _, err := ref.Expand(files[k], resolve)
-			if err != nil {
-				return Result{}, err
-			}
-			fp := filepath.Join(dir, fmt.Sprintf("value-%d", i))
-			if err := os.WriteFile(fp, []byte(v), 0o600); err != nil {
-				return Result{}, fmt.Errorf("write temporary file for %s: %w", k, err)
-			}
-			env = append(env, k+"="+fp)
-		}
+	for _, k := range sortedKeys(filePaths) {
+		env = append(env, k+"="+filePaths[k])
 	}
 
 	timeout := r.Timeout
@@ -375,6 +390,29 @@ func filterEnv(base []string) []string {
 		}
 	}
 	return out
+}
+
+// filePlaceholderRe matches {{file:VAR}}: the path of the temporary file
+// that `files` created for VAR, for tools that take a credential file as an
+// argument (ssh -i, curl --key, curl -K) rather than from a variable.
+var filePlaceholderRe = regexp.MustCompile(`\{\{\s*file:([A-Za-z_][A-Za-z0-9_]*)\s*\}\}`)
+
+// expandFilePaths replaces each {{file:VAR}} with the path of VAR's
+// temporary file. An unknown VAR is an error: nothing passes through as text.
+func expandFilePaths(s string, paths map[string]string) (string, error) {
+	var firstErr error
+	out := filePlaceholderRe.ReplaceAllStringFunc(s, func(m string) string {
+		name := filePlaceholderRe.FindStringSubmatch(m)[1]
+		p, ok := paths[name]
+		if !ok {
+			if firstErr == nil {
+				firstErr = fmt.Errorf("{{file:%s}}: no such entry in files", name)
+			}
+			return m
+		}
+		return p
+	})
+	return out, firstErr
 }
 
 // capped keeps up to max bytes and discards the rest.

@@ -43,6 +43,10 @@ func TestMain(m *testing.M) {
 				fmt.Printf("TOKEN_FILE=%s err=%v\n", b, err)
 				fmt.Fprintln(os.Stderr, f)
 			}
+		case "readfile": // prints the file named by the first argument; is CONF_PATH the same file?
+			b, err := os.ReadFile(os.Args[1])
+			fmt.Printf("file=%s err=%v\n", b, err)
+			fmt.Printf("same=%v\n", os.Getenv("CONF_PATH") == os.Args[1])
 		case "fail":
 			os.Exit(3)
 		case "big":
@@ -135,6 +139,40 @@ func TestRunInjectsAndMasks(t *testing.T) {
 	}
 	if strings.Join(res.RefsUsed, ",") != "vault://proj/dev/TOKEN,vault://proj/dev/KEY" {
 		t.Fatalf("refs = %v", res.RefsUsed)
+	}
+}
+
+// {{file:VAR}} hands a tool the path of a credential file as an argument or
+// in a variable; the content comes back masked, and an unknown VAR or a
+// placeholder in the command itself is refused.
+func TestRunFilePathInArgs(t *testing.T) {
+	r := helper(t, "readfile")
+	res, err := r.Run(context.Background(), Request{
+		Command: "kh-helper",
+		Args:    []string{"{{file:CFG}}"},
+		Env:     map[string]string{"CONF_PATH": "{{file:CFG}}"},
+		Files:   map[string]string{"CFG": "header = Bearer {{vault://proj/dev/TOKEN}}"},
+	})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.Contains(res.Stdout, "SUPER-secret") {
+		t.Fatalf("value leaked: %q", res.Stdout)
+	}
+	if !strings.Contains(res.Stdout, "file=header = Bearer [hidden:vault://proj/dev/TOKEN] err=<nil>") {
+		t.Fatalf("stdout = %q", res.Stdout)
+	}
+	if !strings.Contains(res.Stdout, "same=true") {
+		t.Fatalf("env did not get the same path: %q", res.Stdout)
+	}
+	if _, err := r.Run(context.Background(), Request{Command: "kh-helper", Args: []string{"{{file:NOPE}}"}}); err == nil || !strings.Contains(err.Error(), "{{file:NOPE}}") {
+		t.Fatalf("unknown file: err = %v", err)
+	}
+	if _, err := r.Run(context.Background(), Request{Command: "{{file:CFG}}"}); !errors.Is(err, ErrNotAllowed) {
+		t.Fatalf("command placeholder: err = %v", err)
+	}
+	if _, err := r.Run(context.Background(), Request{Command: "kh-helper", Files: map[string]string{"A": "{{file:A}}"}}); err == nil {
+		t.Fatal("a file containing {{file:...}} must be refused")
 	}
 }
 

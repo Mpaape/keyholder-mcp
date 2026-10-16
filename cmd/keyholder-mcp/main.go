@@ -206,6 +206,7 @@ func main() {
 		Description: "Runs an allowed command, without a shell, replacing {{vault://path/KEY}} with the value only at execution time. " +
 			"Example: command=curl, args=[\"-H\", \"Authorization: Bearer {{vault://my-project/dev/API_TOKEN}}\", \"https://api.example.com/health\"]. " +
 			"Cloud CLIs: credentials=[\"aws:aws/creds/deploy\"] sets AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY and AWS_SESSION_TOKEN from one fresh credential, revoked after the run; credentials=[\"gcp:gcp/roleset/viewer/token\"] gives gcloud an access token. " +
+			"files={\"KEY\": \"{{vault://...}}\"} writes the value to a temporary file, and {{file:KEY}} in args or env is that file's path, for tools that take a credential file as an argument (ssh -i, curl --key, curl -K). " +
 			"The output comes back with the values masked. Masking only catches the exact value: do not encode or print secrets on purpose.",
 	}, func(ctx context.Context, _ *mcp.CallToolRequest, in runner.Request) (*mcp.CallToolResult, runner.Result, error) {
 		if store == nil {

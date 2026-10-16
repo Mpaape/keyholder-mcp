@@ -1,0 +1,16 @@
+# A tool that takes a credential file as an argument: {{file:VAR}}
+
+$ BAO_WRAPPING_TOKEN=<wrapped token> khcall keyholder_run '{"command":"curl","args":["-sS","-K","{{file:CFG}}","http://127.0.0.1:18080/"],"files":{"CFG":"header = \"Authorization: Bearer {{vault://my-project/dev/API_TOKEN}}\""}}'
+{
+  "exit_code": 0,
+  "refs_used": [
+    "vault://my-project/dev/API_TOKEN"
+  ],
+  "stderr": "",
+  "stdout": "api says: hello, caller with header Authorization: Bearer [hidden:vault://my-project/dev/API_TOKEN]\n"
+}
+--- stderr
+<timestamp> audit cmd="curl" refs=[vault://my-project/dev/API_TOKEN] exit=0 dur=<duration> status=ok
+exit_code=0
+
+Did the API receive the stored token? yes

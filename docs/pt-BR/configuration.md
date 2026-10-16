@@ -77,7 +77,7 @@ Entrada:
 | `command` | texto | Nome de um comando permitido. Sem caminho, sem placeholder |
 | `args` | lista de textos | Argumentos; podem conter `{{vault://...}}` e `{{bao://...}}` |
 | `env` | mapa | Variáveis extras para o filho; os valores podem conter placeholders. Nomes `BAO_*`, `VAULT_*`, `KEYHOLDER_*` são recusados |
-| `files` | mapa | Variáveis que recebem o **caminho** de um arquivo temporário com o valor (modo 0600, apagado depois da execução), para ferramentas que leem a credencial de um arquivo |
+| `files` | mapa | Variáveis que recebem o **caminho** de um arquivo temporário com o valor (modo 0600, apagado depois da execução), para ferramentas que leem a credencial de um arquivo; `{{file:VAR}}` em `args` ou `env` é esse caminho |
 | `credentials` | lista de textos | Credenciais de nuvem no formato que cada CLI espera: `aws:<caminho>` ou `gcp:<caminho>`. Veja [Credenciais dinâmicas](#credenciais-dinamicas) |
 
 Saída:
@@ -150,6 +150,18 @@ khcall [-server keyholder-mcp] <tool> ['<argumentos json>'] [+wait=<duração>] 
 ```
 
 Todas as chamadas rodam numa sessão (um servidor, um desembrulho). `+wait=7s` pausa entre chamadas. Código de saída: 0 quando todas dão certo, 1 quando uma tool reporta erro, 2 em erro de uso ou de protocolo.
+
+## `{{file:VAR}}`: um arquivo de credencial como argumento
+
+Algumas ferramentas recebem o arquivo de credencial onde você apontar, não por variável: `ssh -i`, `curl --key`, `curl -K`, `psql` com `PGPASSFILE`. Declare o arquivo em `files` e use `{{file:VAR}}` onde a ferramenta espera o caminho, em `args` ou em `env`:
+
+```json
+{"command": "curl",
+ "args": ["-sS", "-K", "{{file:CFG}}", "https://api.example.com/health"],
+ "files": {"CFG": "header = \"Authorization: Bearer {{vault://my-project/dev/API_TOKEN}}\""}}
+```
+
+O arquivo tem modo 0600, guarda o valor resolvido, existe só durante a execução e é apagado depois; a saída volta mascarada como sempre. Um `VAR` desconhecido é erro, e um arquivo não pode conter `{{file:...}}`. Gravado no [tutorial de início rápido](tutorials/quickstart.md#4-um-arquivo-de-credencial-como-argumento).
 
 ## `exec`: um serviço com os segredos no ambiente
 

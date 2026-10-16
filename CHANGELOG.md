@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Added
+
+- `{{file:VAR}}` in `args` and `env` of `keyholder_run`: the path of the temporary file that `files` created for `VAR`, for tools that take a credential file as an argument (`ssh -i`, `curl --key`, `curl -K`). Unknown names are refused; a file cannot contain `{{file:...}}`. Quickstart tutorial case 4 records it.
+
 ## 0.4.1 - 2026-10-15
 
 ### Changed

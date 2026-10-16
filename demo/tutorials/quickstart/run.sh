@@ -6,7 +6,7 @@
 source "$(dirname "$0")/../lib.sh"
 
 export KEYHOLDER_SCOPE=my-project KEYHOLDER_ALLOW=curl
-CASES=(01-store 02-session 03-run)
+CASES=(01-store 02-session 03-run 04-file)
 
 setup() { echo_server; }
 
@@ -26,6 +26,15 @@ case_03-run() {
   step 03-run "The agent calls an API with the token; the value is masked"
   session my-project-read 1h keyholder_run \
     '{"command":"curl","args":["-sS","-H","Authorization: Bearer {{vault://my-project/dev/API_TOKEN}}","{{vault://my-project/dev/API_URL}}"]}'
+  note "Did the API receive the stored token? $(server_saw 'Bearer tok-fake-not-a-real-secret')"
+}
+
+case_04-file() {
+  step 04-file "A tool that takes a credential file as an argument: {{file:VAR}}"
+  # curl -K reads its options from a file; the file holds the header with the
+  # token, exists only during the run, and {{file:CFG}} is its path.
+  session my-project-read 1h keyholder_run \
+    '{"command":"curl","args":["-sS","-K","{{file:CFG}}","http://127.0.0.1:18080/"],"files":{"CFG":"header = \"Authorization: Bearer {{vault://my-project/dev/API_TOKEN}}\""}}'
   note "Did the API receive the stored token? $(server_saw 'Bearer tok-fake-not-a-real-secret')"
 }
 

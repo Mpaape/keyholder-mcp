@@ -38,3 +38,11 @@ A API de teste responde com o cabeçalho que recebeu. O agente lê `[hidden:...]
 ```text
 --8<-- "demo/tutorials/quickstart/expected/03-run.txt"
 ```
+
+## 4. Um arquivo de credencial como argumento
+
+O `curl -K` lê as opções de um arquivo. O arquivo é declarado em `files`, guarda o cabeçalho com o token, existe só durante a execução, e `{{file:CFG}}` é o caminho dele. A API continua recebendo o token real; o agente o lê mascarado.
+
+```text
+--8<-- "demo/tutorials/quickstart/expected/04-file.txt"
+```

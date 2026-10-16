@@ -38,3 +38,11 @@ The test API answers with the header it received. The agent reads `[hidden:...]`
 ```text
 --8<-- "demo/tutorials/quickstart/expected/03-run.txt"
 ```
+
+## 4. A credential file as an argument
+
+`curl -K` reads its options from a file. The file is declared in `files`, holds the header with the token, exists only during the run, and `{{file:CFG}}` is its path. The API still receives the real token; the agent reads it masked.
+
+```text
+--8<-- "demo/tutorials/quickstart/expected/04-file.txt"
+```

@@ -6,7 +6,7 @@ Values that change between runs are shown by their shape: `<timestamp>`, `<durat
 
 | Tutorial | Cases |
 | --- | --- |
-| [Quickstart](quickstart.md) | 1. the human stores a secret and a policy; 2. the agent sees the tools, the session and the names; 3. the agent calls an API with the token, masked |
+| [Quickstart](quickstart.md) | 1. the human stores a secret and a policy; 2. the agent sees the tools, the session and the names; 3. the agent calls an API with the token, masked; 4. a credential file as an argument, via `{{file:VAR}}` |
 | [Temporary access](access.md) | 1. a wrapped token opens one session, reusing it fails; 2. a 5-second token expires mid-session; 3. without a token the server explains and refuses; 4. expiry revokes the leases the token created |
 | [Guardrails](guardrails.md) | 1. only the project scope, even with a broad policy; 2. commands outside the list, with a path or a placeholder; 3. reserved variables; 4. the vault token never reaches the child |
 | [Masking and its limit](masking.md) | 1. a reflected value is masked; 2. LIMIT: an allowed interpreter encodes the value and escapes the mask |
