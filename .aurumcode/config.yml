@@ -1,6 +1,6 @@
 # AurumCode configuration for Keyholder MCP, in the same shape as AurumCode's
 # own .aurumcode/config.yml.
-# Reference: https://github.com/Mpaape/AurumCode/blob/v2.0.0/docs/configuration.md
+# Reference: https://github.com/Mpaape/AurumCode/blob/v2.1.0/docs/configuration.md
 # Project rules: .aurumcode/skills/<name>/SKILL.md; each "## " becomes a rule
 # citable as <name>#<slug>, and "severity: error" in it fails the gate.
 review:

@@ -14,8 +14,8 @@ permissions:
   contents: read
 
 concurrency:
-  # Must differ from the reusable review job's own group
-  # (aurumcode-review-<pr>), or GitHub cancels both as a deadlock.
+  # Must differ from the reusable workflow's own groups (aurumcode/...),
+  # or GitHub cancels both as a deadlock.
   group: ci-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
@@ -145,7 +145,7 @@ jobs:
       pull-requests: write
       statuses: write
       checks: read
-    uses: Mpaape/AurumCode/.github/workflows/review.yml@v2.0.0
+    uses: Mpaape/AurumCode/.github/workflows/review.yml@v2.1.0
     with:
       model: ${{ vars.LLM_MODEL }}
       provider: ${{ vars.LLM_PROVIDER }}

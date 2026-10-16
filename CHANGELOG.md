@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+## 0.4.1 - 2026-10-15
+
+### Changed
+
+- The AurumCode gate runs on AurumCode v2.1.0 (was v2.0.0): the model has the final say on static findings, large policies and diffs no longer stop the review, and the v2.0.0 limits met in adoption are fixed ([Mpaape/AurumCode#179](https://github.com/Mpaape/AurumCode/issues/179)).
+
 ## 0.4.0 - 2026-10-15
 
 ### Added

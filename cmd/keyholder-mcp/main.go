@@ -32,7 +32,7 @@ import (
 	"keyholder-mcp/internal/runner"
 )
 
-var version = "0.4.0-dev"
+var version = "0.4.1-dev"
 
 type config struct {
 	mount   string

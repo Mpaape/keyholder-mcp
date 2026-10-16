@@ -1,12 +1,12 @@
 # Revisão de código
 
-O [AurumCode](https://github.com/Mpaape/AurumCode) v2.0.0 é uma etapa do pipeline de CI: em todo pull request, depois que os testes e os tutoriais passam, ele confere a mudança contra as regras do próprio projeto. O veredito é o status `aurumcode/policy-gate`, que reprova com um achado `error` e é obrigatório para o merge no `main`. Ele publica o parecer como comentário no pull request e nunca aprova um pull request; o merge é decisão de uma pessoa.
+O [AurumCode](https://github.com/Mpaape/AurumCode) v2.1.0 é uma etapa do pipeline de CI: em todo pull request, depois que os testes e os tutoriais passam, ele confere a mudança contra as regras do próprio projeto. O veredito é o status `aurumcode/policy-gate`, que reprova com um achado `error` e é obrigatório para o merge no `main`. Ele publica o parecer como comentário no pull request e nunca aprova um pull request; o merge é decisão de uma pessoa.
 
 ## Como está ligado
 
 | Arquivo | Papel |
 | --- | --- |
-| `.github/workflows/ci.yml`, job `aurumcode` | Chama o workflow reutilizável `Mpaape/AurumCode/.github/workflows/review.yml@v2.0.0` depois de `test` e `tutorials` |
+| `.github/workflows/ci.yml`, job `aurumcode` | Chama o workflow reutilizável `Mpaape/AurumCode/.github/workflows/review.yml@v2.1.0` depois de `test` e `tutorials` |
 | `.aurumcode/config.yml` | Idioma, publicação, gate, scanners, deliberação e exceções |
 | `.aurumcode/prompt.md` | Contexto do projeto enviado ao modelo |
 | `.aurumcode/skills/<nome>/SKILL.md` | Regras do projeto; cada seção `## ` vira uma regra citável |
@@ -41,7 +41,7 @@ gh variable set LLM_PROVIDER -R Mpaape/keyholder-mcp --body "anthropic"
 gh variable set LLM_MODEL -R Mpaape/keyholder-mcp --body "claude-haiku-5-5"
 ```
 
-Perfis e URLs de provedores: [provedores do AurumCode](https://github.com/Mpaape/AurumCode/blob/v2.0.0/docs/provedores.md). PRs do Dependabot só recebem *Dependabot secrets*; para revisá-los, cadastre `LLM_API_KEY` e `LLM_BASE_URL` lá também.
+Perfis e URLs de provedores: [provedores do AurumCode](https://github.com/Mpaape/AurumCode/blob/v2.1.0/docs/provedores.md). PRs do Dependabot só recebem *Dependabot secrets*; para revisá-los, cadastre `LLM_API_KEY` e `LLM_BASE_URL` lá também.
 
 ## Gate
 
@@ -57,7 +57,7 @@ O `aurumcode/policy-gate` é check obrigatório no ruleset do `main` ([`.github/
 
 ## Regras do projeto
 
-Id citável: `<skill>#<slug do título da seção>`, por exemplo `security#sec-001`. O título da seção traz só o id, e o nome da regra abre o corpo: o AurumCode v2.0.0 põe todos os ids de regra no prompt com um teto fixo de 512 tokens e se recusa a rodar quando ele estoura, então ids longos parariam a revisão. As regras estão em inglês, a língua principal do repositório. As marcadas "Sim" têm `severity: error` e bloqueiam o merge; as outras são avisos.
+Id citável: `<skill>#<slug do título da seção>`, por exemplo `security#sec-001`. O título da seção traz só o id, e o nome da regra abre o corpo, formato mantido do AurumCode v2.0.0, cujo teto fixo de 512 tokens do catálogo de regras saiu na v2.1.0. As regras estão em inglês, a língua principal do repositório. As marcadas "Sim" têm `severity: error` e bloqueiam o merge; as outras são avisos.
 
 ### `security` — caminhos ["**"]
 
@@ -120,6 +120,6 @@ Com a CLI do AurumCode (Go 1.27 ou a imagem Docker dele), na raiz do repositóri
 aurumcode review --base origin/main --seguranca
 ```
 
-Limites conhecidos do AurumCode v2.0.0 encontrados na adoção (teto do catálogo de regras, grupo de concorrência reservado, job de SARIF) estão em [Mpaape/AurumCode#179](https://github.com/Mpaape/AurumCode/issues/179).
+Os limites do AurumCode v2.0.0 encontrados na adoção (teto do catálogo de regras, grupo de concorrência reservado, job de SARIF) foram corrigidos na v2.1.0 ([Mpaape/AurumCode#179](https://github.com/Mpaape/AurumCode/issues/179)).
 
-Sem `LLM_API_KEY` e `LLM_BASE_URL` só a análise determinística roda; sem `gitleaks` e `semgrep` no `PATH` esses scanners aparecem como inconclusivos. Veja o [início rápido do AurumCode](https://github.com/Mpaape/AurumCode/blob/v2.0.0/docs/getting-started.md).
+Sem `LLM_API_KEY` e `LLM_BASE_URL` só a análise determinística roda; sem `gitleaks` e `semgrep` no `PATH` esses scanners aparecem como inconclusivos. Veja o [início rápido do AurumCode](https://github.com/Mpaape/AurumCode/blob/v2.1.0/docs/getting-started.md).

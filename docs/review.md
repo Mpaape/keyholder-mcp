@@ -1,12 +1,12 @@
 # Code review
 
-[AurumCode](https://github.com/Mpaape/AurumCode) v2.0.0 is a stage of the CI pipeline: on every pull request, after the tests and tutorials pass, it checks the change against the project's own rules. Its verdict is the `aurumcode/policy-gate` status, which fails on an `error` finding and is required to merge into `main`. It posts its report as a pull request comment and never approves a pull request; merging is a person's decision.
+[AurumCode](https://github.com/Mpaape/AurumCode) v2.1.0 is a stage of the CI pipeline: on every pull request, after the tests and tutorials pass, it checks the change against the project's own rules. Its verdict is the `aurumcode/policy-gate` status, which fails on an `error` finding and is required to merge into `main`. It posts its report as a pull request comment and never approves a pull request; merging is a person's decision.
 
 ## How it is wired
 
 | File | Role |
 | --- | --- |
-| `.github/workflows/ci.yml`, job `aurumcode` | Calls the reusable workflow `Mpaape/AurumCode/.github/workflows/review.yml@v2.0.0` after `test` and `tutorials` |
+| `.github/workflows/ci.yml`, job `aurumcode` | Calls the reusable workflow `Mpaape/AurumCode/.github/workflows/review.yml@v2.1.0` after `test` and `tutorials` |
 | `.aurumcode/config.yml` | Language, publication, gate, scanners, deliberation and exceptions |
 | `.aurumcode/prompt.md` | Project context sent to the model |
 | `.aurumcode/skills/<name>/SKILL.md` | Project rules; each `## ` section becomes a citable rule |
@@ -41,7 +41,7 @@ gh variable set LLM_PROVIDER -R Mpaape/keyholder-mcp --body "anthropic"
 gh variable set LLM_MODEL -R Mpaape/keyholder-mcp --body "claude-haiku-5-5"
 ```
 
-Provider profiles and URLs: [AurumCode providers](https://github.com/Mpaape/AurumCode/blob/v2.0.0/docs/provedores.md). Dependabot PRs only get *Dependabot secrets*; to review them, add `LLM_API_KEY` and `LLM_BASE_URL` there too.
+Provider profiles and URLs: [AurumCode providers](https://github.com/Mpaape/AurumCode/blob/v2.1.0/docs/provedores.md). Dependabot PRs only get *Dependabot secrets*; to review them, add `LLM_API_KEY` and `LLM_BASE_URL` there too.
 
 ## Gate
 
@@ -57,7 +57,7 @@ Provider profiles and URLs: [AurumCode providers](https://github.com/Mpaape/Auru
 
 ## Project rules
 
-Citable id: `<skill>#<slug of the heading>`, for example `security#sec-001`. Headings carry only the id and the title opens the body: AurumCode v2.0.0 puts every rule id in the prompt under a fixed 512-token budget and refuses to run when it overflows, so long ids would stop the review. Rules marked "Yes" have `severity: error` and block the merge; the others are warnings.
+Citable id: `<skill>#<slug of the heading>`, for example `security#sec-001`. Headings carry only the id and the title opens the body, a layout kept from AurumCode v2.0.0, whose fixed 512-token rule catalog budget is gone in v2.1.0. Rules marked "Yes" have `severity: error` and block the merge; the others are warnings.
 
 ### `security` — paths ["**"]
 
@@ -120,6 +120,6 @@ With the AurumCode CLI (Go 1.27 or its Docker image), at the repository root:
 aurumcode review --base origin/main --seguranca
 ```
 
-Known limits of AurumCode v2.0.0 met while adopting it (rule catalog budget, reserved concurrency group, SARIF job) are tracked in [Mpaape/AurumCode#179](https://github.com/Mpaape/AurumCode/issues/179).
+The limits of AurumCode v2.0.0 met while adopting it (rule catalog budget, reserved concurrency group, SARIF job) were fixed in v2.1.0 ([Mpaape/AurumCode#179](https://github.com/Mpaape/AurumCode/issues/179)).
 
-Without `LLM_API_KEY` and `LLM_BASE_URL` only the deterministic analysis runs; without `gitleaks` and `semgrep` on the `PATH` those scanners are reported as inconclusive. See [AurumCode getting started](https://github.com/Mpaape/AurumCode/blob/v2.0.0/docs/getting-started.md).
+Without `LLM_API_KEY` and `LLM_BASE_URL` only the deterministic analysis runs; without `gitleaks` and `semgrep` on the `PATH` those scanners are reported as inconclusive. See [AurumCode getting started](https://github.com/Mpaape/AurumCode/blob/v2.1.0/docs/getting-started.md).
