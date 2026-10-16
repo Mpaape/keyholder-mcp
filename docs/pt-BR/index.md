@@ -119,6 +119,6 @@ bao token create -policy=my-project-read -ttl=8h -explicit-max-ttl=8h -wrap-ttl=
 
 Depois cadastre o `keyholder-mcp` no [Claude Code, Cursor ou Codex](clients.md) com esse token embrulhado. Cada passo explicado: [Começando](getting-started.md). Cada comportamento, com saída real: [Tutoriais](tutorials/index.md).
 
-Versão 0.4.0, licença MIT. [Código, issues e releases no GitHub](https://github.com/Mpaape/keyholder-mcp). CLIs de nuvem recebem uma credencial criada para cada execução: [credenciais de nuvem](tutorials/cloud.md). Para segredos reais, rode um [cofre persistente](server.md). Próximos passos no [roteiro](spec.md#11-roteiro): pedidos de acesso pelo agente, SSH.
+Versão 0.4.1, licença MIT. [Código, issues e releases no GitHub](https://github.com/Mpaape/keyholder-mcp). CLIs de nuvem recebem uma credencial criada para cada execução: [credenciais de nuvem](tutorials/cloud.md). Para segredos reais, rode um [cofre persistente](server.md). Próximos passos no [roteiro](spec.md#11-roteiro): pedidos de acesso pelo agente, SSH.
 
 </div>

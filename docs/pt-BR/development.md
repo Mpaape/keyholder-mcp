@@ -73,7 +73,7 @@ As páginas de tutorial incluem os arquivos de `demo/tutorials/*/expected/` na g
 
 ## Gate do AurumCode no seu agente
 
-O `.mcp.json` registra o [`aurumcode mcp`](https://github.com/Mpaape/AurumCode/blob/v2.0.0/docs/agentes.md) para o Claude Code, então o agente consulta o mesmo gate do CI (`aurum_gate`, `aurum_review`, `aurum_rules`, `aurum_explain`) antes de commitar. Precisa do binário `aurumcode` no `PATH` e da sua chave no shell que abre o Claude Code; a chave nunca vai para o arquivo:
+O `.mcp.json` registra o [`aurumcode mcp`](https://github.com/Mpaape/AurumCode/blob/v2.1.0/docs/agentes.md) para o Claude Code, então o agente consulta o mesmo gate do CI (`aurum_gate`, `aurum_review`, `aurum_rules`, `aurum_explain`) antes de commitar. Precisa do binário `aurumcode` no `PATH` e da sua chave no shell que abre o Claude Code; a chave nunca vai para o arquivo:
 
 ```bash
 read -s LLM_API_KEY && export LLM_API_KEY     # padrões do provedor: Anthropic, claude-haiku-5-5
